@@ -1,7 +1,4 @@
-from speech_vector_search.sampling import (
-    group_token_indices,
-    sample_word_subsets,
-)
+from speech_vector_search import sampling
 
 
 def test_group_token_indices():
@@ -10,13 +7,14 @@ def test_group_token_indices():
         {"label": "b", "id": "1"},
         {"word": "a", "id": "2"},
     ]
-    groups = group_token_indices(metadata)
+    groups = sampling.group_token_indices(metadata)
     assert groups == {"a": [0, 2], "b": [1]}
 
 
 def test_non_overlapping_subsets():
     groups = {"word": list(range(8))}
-    sampled = sample_word_subsets(groups, subset_size=2, n_subsets=3, seed=4)
+    sampled = sampling.sample_word_subsets(groups, subset_size=2, n_subsets=3,
+        seed=4)
     subsets = sampled["word"]
     used = []
     for subset in subsets:
@@ -26,6 +24,8 @@ def test_non_overlapping_subsets():
 
 def test_sampling_is_deterministic():
     groups = {"word": list(range(10))}
-    first = sample_word_subsets(groups, subset_size=2, n_subsets=3, seed=9)
-    second = sample_word_subsets(groups, subset_size=2, n_subsets=3, seed=9)
+    first = sampling.sample_word_subsets(groups, subset_size=2, n_subsets=3,
+        seed=9)
+    second = sampling.sample_word_subsets(groups, subset_size=2, n_subsets=3,
+        seed=9)
     assert first == second

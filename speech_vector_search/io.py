@@ -3,7 +3,7 @@ import json
 
 import numpy as np
 
-from speech_vector_search.utils import infer_label_key, write_json
+from speech_vector_search import utils
 
 
 def load_token_data(embeddings_path, metadata_path):
@@ -51,8 +51,7 @@ def save_prototypes(vectors, metadata, output_dir, config=None):
     metadata_path = output_dir + "/metadata.jsonl"
     np.save(vectors_path, np.asarray(vectors, dtype=float))
     save_metadata_jsonl(metadata, metadata_path)
-    if config is not None:
-        write_json(config, output_dir + "/config.json")
+    if config is not None: utils.write_json(config, output_dir + "/config.json")
     return {
         "vectors": vectors_path,
         "metadata": metadata_path,
@@ -91,10 +90,9 @@ def load_metadata_jsonl(path):
     with open(path) as handle:
         for line in handle:
             line = line.strip()
-            if not line:
-                continue
+            if not line: continue
             row = json.loads(line)
-            infer_label_key(row)
+            utils.infer_label_key(row)
             rows.append(row)
     return rows
 
@@ -107,5 +105,5 @@ def load_metadata_csv(path):
         reader = csv.DictReader(handle)
         rows = list(reader)
     for row in rows:
-        infer_label_key(row)
+        utils.infer_label_key(row)
     return rows

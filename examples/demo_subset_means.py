@@ -4,14 +4,10 @@ import tempfile
 
 import numpy as np
 
-from speech_vector_search.io import (
-    load_token_data,
-    save_metadata_jsonl,
-    save_prototypes,
-)
-from speech_vector_search.prototypes import build_subset_mean_prototypes
-from speech_vector_search.search import PrototypeIndex
-from speech_vector_search.utils import ensure_directory
+from speech_vector_search import io
+from speech_vector_search import prototypes
+from speech_vector_search import search
+from speech_vector_search import utils
 
 
 def main():
@@ -37,24 +33,20 @@ def main():
     ]
 
     with tempfile.TemporaryDirectory() as directory:
-        ensure_directory(directory)
+        utils.ensure_directory(directory)
         np.savez(os.path.join(directory, "tokens.npz"), embeddings=embeddings)
-        save_metadata_jsonl(metadata, os.path.join(directory, "tokens.jsonl"))
+        metadata_path = os.path.join(directory, "tokens.jsonl")
+        io.save_metadata_jsonl(metadata, metadata_path)
 
-        loaded_embeddings, loaded_metadata = load_token_data(
+        loaded_embeddings, loaded_metadata = io.load_token_data(
             os.path.join(directory, "tokens.npz"),
             os.path.join(directory, "tokens.jsonl"),
         )
-        vectors, rows, config = build_subset_mean_prototypes(
-            loaded_embeddings,
-            loaded_metadata,
-            subset_size=3,
-            n_subsets=1,
-            min_count=3,
-            seed=3,
-        )
-        save_prototypes(vectors, rows, directory, config=config)
-        index = PrototypeIndex(vectors, rows)
+        vectors, rows, config = prototypes.build_subset_mean_prototypes(
+            loaded_embeddings, loaded_metadata, subset_size=3, n_subsets=1,
+            min_count=3, seed=3)
+        io.save_prototypes(vectors, rows, directory, config=config)
+        index = search.PrototypeIndex(vectors, rows)
         result = index.query_by_index(0, top_k=2)
         print(json.dumps(result["metadata"], indent=2))
 

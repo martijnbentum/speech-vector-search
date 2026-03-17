@@ -2,7 +2,7 @@ from collections import Counter
 
 import numpy as np
 
-from speech_vector_search.search import PrototypeIndex
+from speech_vector_search import search
 
 
 def top_k_same_word_retrieval(vectors, metadata, top_k=5):
@@ -11,7 +11,7 @@ def top_k_same_word_retrieval(vectors, metadata, top_k=5):
     metadata                 prototype metadata rows
     top_k                    number of neighbours to inspect
     '''
-    index = PrototypeIndex(vectors, metadata, backend="brute_force")
+    index = search.PrototypeIndex(vectors, metadata, backend="brute_force")
     hits = []
     for query_index in range(len(metadata)):
         search_depth = min(top_k + 1, len(metadata))
@@ -19,8 +19,7 @@ def top_k_same_word_retrieval(vectors, metadata, top_k=5):
         found = False
         for neighbour in result["indices"]:
             neighbour = int(neighbour)
-            if neighbour == query_index:
-                continue
+            if neighbour == query_index: continue
             if metadata[neighbour]["word"] == metadata[query_index]["word"]:
                 found = True
                 break
@@ -33,15 +32,14 @@ def mean_same_word_rank(vectors, metadata):
     vectors                  prototype matrix
     metadata                 prototype metadata rows
     '''
-    index = PrototypeIndex(vectors, metadata, backend="brute_force")
+    index = search.PrototypeIndex(vectors, metadata, backend="brute_force")
     ranks = []
     for query_index in range(len(metadata)):
         result = index.query_by_index(query_index, top_k=len(metadata))
         rank = len(metadata)
         for position, neighbour in enumerate(result["indices"], start=1):
             neighbour = int(neighbour)
-            if neighbour == query_index:
-                continue
+            if neighbour == query_index: continue
             if metadata[neighbour]["word"] == metadata[query_index]["word"]:
                 rank = position
                 break
@@ -58,8 +56,7 @@ def average_within_word_similarity(vectors, metadata):
     similarities = []
     for word in sorted({row["word"] for row in metadata}):
         indices = [i for i, row in enumerate(metadata) if row["word"] == word]
-        if len(indices) < 2:
-            continue
+        if len(indices) < 2: continue
         subset = vectors[indices]
         scores = np.dot(subset, subset.T)
         upper = np.triu_indices(len(indices), k=1)
@@ -89,11 +86,7 @@ def evaluate_same_word_retrieval(vectors, metadata, top_k=5):
     top_k                    number of neighbours to inspect
     '''
     summary = summarize_prototypes(vectors, metadata)
-    top_k_score = top_k_same_word_retrieval(
-        vectors,
-        metadata,
-        top_k=top_k,
-    )
+    top_k_score = top_k_same_word_retrieval(vectors, metadata, top_k=top_k)
     summary["top_k_same_word"] = top_k_score
     summary["mean_same_word_rank"] = mean_same_word_rank(vectors, metadata)
     return summary

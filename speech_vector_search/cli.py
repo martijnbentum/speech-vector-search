@@ -3,34 +3,24 @@ import json
 
 import numpy as np
 
-from speech_vector_search.evaluate import evaluate_same_word_retrieval
-from speech_vector_search.io import (
-    load_prototypes,
-    load_token_data,
-    save_metadata_jsonl,
-    save_prototypes,
-)
-from speech_vector_search.prototypes import build_subset_mean_prototypes
-from speech_vector_search.search import PrototypeIndex
-from speech_vector_search.utils import ensure_directory
+from speech_vector_search import evaluate
+from speech_vector_search import io
+from speech_vector_search import prototypes
+from speech_vector_search import search
+from speech_vector_search import utils
 
 
 def build_prototypes_command(args):
     '''build and save prototypes.
     args                     argparse namespace
     '''
-    embeddings, metadata = load_token_data(args.embeddings, args.metadata)
-    vectors, rows, config = build_subset_mean_prototypes(
-        embeddings,
-        metadata,
-        subset_size=args.subset_size,
-        n_subsets=args.n_subsets,
-        min_count=args.min_count,
-        seed=args.seed,
-        strict_non_overlapping=not args.allow_partial,
-    )
-    ensure_directory(args.output_dir)
-    paths = save_prototypes(vectors, rows, args.output_dir, config=config)
+    embeddings, metadata = io.load_token_data(args.embeddings, args.metadata)
+    vectors, rows, config = prototypes.build_subset_mean_prototypes(embeddings,
+        metadata, subset_size=args.subset_size, n_subsets=args.n_subsets,
+        min_count=args.min_count, seed=args.seed,
+        strict_non_overlapping=not args.allow_partial)
+    utils.ensure_directory(args.output_dir)
+    paths = io.save_prototypes(vectors, rows, args.output_dir, config=config)
     print(json.dumps(paths, indent=2))
 
 
@@ -38,16 +28,13 @@ def build_index_command(args):
     '''copy normalized prototype files.
     args                     argparse namespace
     '''
-    vectors, metadata = load_prototypes(args.vectors, args.metadata)
-    ensure_directory(args.output_dir)
+    vectors, metadata = io.load_prototypes(args.vectors, args.metadata)
+    utils.ensure_directory(args.output_dir)
     vectors_path = args.output_dir + "/prototypes.npy"
     metadata_path = args.output_dir + "/metadata.jsonl"
     np.save(vectors_path, vectors)
-    save_metadata_jsonl(metadata, metadata_path)
-    paths = {
-        "vectors": vectors_path,
-        "metadata": metadata_path,
-    }
+    io.save_metadata_jsonl(metadata, metadata_path)
+    paths = {"vectors": vectors_path, "metadata": metadata_path}
     print(json.dumps(paths, indent=2))
 
 
@@ -55,8 +42,8 @@ def query_command(args):
     '''query nearest neighbours.
     args                     argparse namespace
     '''
-    vectors, metadata = load_prototypes(args.vectors, args.metadata)
-    index = PrototypeIndex(vectors, metadata, backend=args.backend)
+    vectors, metadata = io.load_prototypes(args.vectors, args.metadata)
+    index = search.PrototypeIndex(vectors, metadata, backend=args.backend)
     if args.query_index is not None:
         result = index.query_by_index(args.query_index, top_k=args.top_k)
     else:
@@ -71,8 +58,9 @@ def evaluate_command(args):
     '''evaluate same-word retrieval.
     args                     argparse namespace
     '''
-    vectors, metadata = load_prototypes(args.vectors, args.metadata)
-    result = evaluate_same_word_retrieval(vectors, metadata, top_k=args.top_k)
+    vectors, metadata = io.load_prototypes(args.vectors, args.metadata)
+    result = evaluate.evaluate_same_word_retrieval(vectors, metadata,
+        top_k=args.top_k)
     print(json.dumps(result, indent=2))
 
 
@@ -82,11 +70,8 @@ def main():
     '''
     parser = build_parser()
     args = parser.parse_args()
-    missing_query = (
-        args.command == "query"
-        and args.query_index is None
-        and args.query_vector is None
-    )
+    missing_query = args.command == "query" and args.query_index is None
+    missing_query = missing_query and args.query_vector is None
     if missing_query:
         parser.error("query requires --query-index or --query-vector")
     args.func(args)
@@ -125,12 +110,11 @@ def build_parser():
     query.add_argument("--backend", default="auto")
     query.set_defaults(func=query_command)
 
-    evaluate = subparsers.add_parser("evaluate")
-    evaluate.add_argument("--vectors", required=True)
-    evaluate.add_argument("--metadata", required=True)
-    evaluate.add_argument("--top-k", type=int, default=5)
-    evaluate.set_defaults(func=evaluate_command)
-
+    evaluate_parser = subparsers.add_parser("evaluate")
+    evaluate_parser.add_argument("--vectors", required=True)
+    evaluate_parser.add_argument("--metadata", required=True)
+    evaluate_parser.add_argument("--top-k", type=int, default=5)
+    evaluate_parser.set_defaults(func=evaluate_command)
     return parser
 
 
