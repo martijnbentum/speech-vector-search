@@ -3,14 +3,20 @@ import json
 
 import numpy as np
 
+from speech_vector_search import locations
 from speech_vector_search import utils
 
 
-def load_token_data(embeddings_path, metadata_path):
+def load_token_data(embeddings_path=None, metadata_path=None, directory=None,
+    name=None):
     '''load token embeddings and metadata.
-    embeddings_path         npz or npy file path
-    metadata_path           jsonl or csv file path
+    embeddings_path         optional npz or npy file path
+    metadata_path           optional jsonl or csv file path
+    directory               optional storage directory
+    name                    optional base name without extension
     '''
+    embeddings_path, metadata_path = resolve_token_paths(embeddings_path,
+        metadata_path, directory, name)
     if embeddings_path.endswith(".npz"):
         embeddings = load_embeddings_npz(embeddings_path)
     elif embeddings_path.endswith(".npy"):
@@ -30,6 +36,23 @@ def load_token_data(embeddings_path, metadata_path):
     return embeddings, metadata
 
 
+def save_token_data(embeddings, metadata, directory=None, name=None):
+    '''save token embeddings and metadata.
+    embeddings              token embedding matrix
+    metadata                token metadata records
+    directory               optional storage directory
+    name                    optional base name without extension
+    '''
+    directory = locations.resolve_directory(directory)
+    name = locations.resolve_name(name)
+    utils.ensure_directory(directory)
+    embeddings_path = locations.token_embeddings_path(directory, name)
+    metadata_path = locations.token_metadata_path(directory, name)
+    np.savez(embeddings_path, embeddings=np.asarray(embeddings, dtype=float))
+    save_metadata_jsonl(metadata, metadata_path)
+    return {"embeddings": embeddings_path, "metadata": metadata_path}
+
+
 def save_metadata_jsonl(rows, path):
     '''save metadata rows to jsonl.
     rows                     metadata records
@@ -40,30 +63,43 @@ def save_metadata_jsonl(rows, path):
             handle.write(json.dumps(row) + "\n")
 
 
-def save_prototypes(vectors, metadata, output_dir, config=None):
+def save_prototypes(vectors, metadata, directory=None, name=None, config=None):
     '''save prototype vectors and metadata.
     vectors                  prototype matrix
     metadata                 prototype metadata records
-    output_dir               directory to save files in
+    directory                optional storage directory
+    name                     optional base name without extension
     config                   optional config dict to save
     '''
-    vectors_path = output_dir + "/prototypes.npy"
-    metadata_path = output_dir + "/metadata.jsonl"
+    directory = locations.resolve_directory(directory)
+    name = locations.resolve_name(name)
+    utils.ensure_directory(directory)
+    vectors_path = locations.prototype_vectors_path(directory, name)
+    metadata_path = locations.prototype_metadata_path(directory, name)
     np.save(vectors_path, np.asarray(vectors, dtype=float))
     save_metadata_jsonl(metadata, metadata_path)
-    if config is not None: utils.write_json(config, output_dir + "/config.json")
+    if config is not None:
+        config_path = locations.config_path(directory, name)
+        utils.write_json(config, config_path)
+    else:
+        config_path = None
     return {
         "vectors": vectors_path,
         "metadata": metadata_path,
-        "config": output_dir + "/config.json" if config is not None else None,
+        "config": config_path,
     }
 
 
-def load_prototypes(vectors_path, metadata_path):
+def load_prototypes(vectors_path=None, metadata_path=None, directory=None,
+    name=None):
     '''load saved prototypes.
-    vectors_path             npy file path
-    metadata_path            jsonl file path
+    vectors_path             optional npy file path
+    metadata_path            optional jsonl file path
+    directory                optional storage directory
+    name                     optional base name without extension
     '''
+    vectors_path, metadata_path = resolve_prototype_paths(vectors_path,
+        metadata_path, directory, name)
     vectors = np.asarray(np.load(vectors_path), dtype=float)
     metadata = load_metadata_jsonl(metadata_path)
     if len(vectors) != len(metadata):
@@ -107,3 +143,31 @@ def load_metadata_csv(path):
     for row in rows:
         utils.infer_label_key(row)
     return rows
+
+
+def resolve_token_paths(embeddings_path, metadata_path, directory, name):
+    '''resolve token data paths.
+    embeddings_path         optional embedding file path
+    metadata_path           optional metadata file path
+    directory               optional storage directory
+    name                    optional base name without extension
+    '''
+    if embeddings_path is None:
+        embeddings_path = locations.token_embeddings_path(directory, name)
+    if metadata_path is None:
+        metadata_path = locations.token_metadata_path(directory, name)
+    return embeddings_path, metadata_path
+
+
+def resolve_prototype_paths(vectors_path, metadata_path, directory, name):
+    '''resolve prototype data paths.
+    vectors_path            optional vector file path
+    metadata_path           optional metadata file path
+    directory               optional storage directory
+    name                    optional base name without extension
+    '''
+    if vectors_path is None:
+        vectors_path = locations.prototype_vectors_path(directory, name)
+    if metadata_path is None:
+        metadata_path = locations.prototype_metadata_path(directory, name)
+    return vectors_path, metadata_path

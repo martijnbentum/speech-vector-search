@@ -1,5 +1,4 @@
 import json
-import os
 import tempfile
 
 import numpy as np
@@ -12,6 +11,30 @@ from speech_vector_search import utils
 
 def main():
     '''run small subset-means demo.
+    '''
+    embeddings, metadata = make_demo_tokens()
+    with tempfile.TemporaryDirectory() as directory:
+        utils.ensure_directory(directory)
+        embeddings_path, metadata_path = save_demo_tokens(
+            directory,
+            embeddings,
+            metadata,
+        )
+        loaded_embeddings, loaded_metadata = load_demo_tokens(
+            embeddings_path,
+            metadata_path,
+        )
+        vectors, rows = build_demo_prototypes(
+            directory,
+            loaded_embeddings,
+            loaded_metadata,
+        )
+        show_demo_query(vectors, rows)
+
+
+def make_demo_tokens():
+    '''create small token embeddings and metadata.
+    no parameters            returns demo embeddings and metadata
     '''
     embeddings = np.array(
         [
@@ -31,24 +54,48 @@ def main():
         {"word": "world", "id": "w2", "speaker": "spk2"},
         {"word": "world", "id": "w3", "speaker": "spk2"},
     ]
+    return embeddings, metadata
 
-    with tempfile.TemporaryDirectory() as directory:
-        utils.ensure_directory(directory)
-        np.savez(os.path.join(directory, "tokens.npz"), embeddings=embeddings)
-        metadata_path = os.path.join(directory, "tokens.jsonl")
-        io.save_metadata_jsonl(metadata, metadata_path)
 
-        loaded_embeddings, loaded_metadata = io.load_token_data(
-            os.path.join(directory, "tokens.npz"),
-            os.path.join(directory, "tokens.jsonl"),
-        )
-        vectors, rows, config = prototypes.build_subset_mean_prototypes(
-            loaded_embeddings, loaded_metadata, subset_size=3, n_subsets=1,
-            min_count=3, seed=3)
-        io.save_prototypes(vectors, rows, directory, config=config)
-        index = search.PrototypeIndex(vectors, rows)
-        result = index.query_by_index(0, top_k=2)
-        print(json.dumps(result["metadata"], indent=2))
+def save_demo_tokens(directory, embeddings, metadata):
+    '''save demo token data to a temporary directory.
+    directory                directory for temporary files
+    embeddings               token embedding matrix
+    metadata                 token metadata rows
+    '''
+    paths = io.save_token_data(embeddings, metadata, directory=directory)
+    return paths["embeddings"], paths["metadata"]
+
+
+def load_demo_tokens(embeddings_path, metadata_path):
+    '''load demo token data from disk.
+    embeddings_path          npz file path
+    metadata_path            jsonl file path
+    '''
+    return io.load_token_data(embeddings_path, metadata_path)
+
+
+def build_demo_prototypes(directory, embeddings, metadata):
+    '''build and save demo prototypes.
+    directory                directory for saved prototype files
+    embeddings               token embedding matrix
+    metadata                 token metadata rows
+    '''
+    vectors, rows, config = prototypes.build_subset_mean_prototypes(
+        embeddings, metadata, subset_size=3, n_subsets=1, min_count=3, seed=3)
+    io.save_prototypes(vectors, rows, directory=directory,
+        name="prototypes", config=config)
+    return vectors, rows
+
+
+def show_demo_query(vectors, rows):
+    '''query the demo prototypes and print metadata.
+    vectors                  prototype matrix
+    rows                     prototype metadata rows
+    '''
+    index = search.PrototypeIndex(vectors, rows)
+    result = index.query_by_index(0, top_k=2)
+    print(json.dumps(result["metadata"], indent=2))
 
 
 if __name__ == "__main__":

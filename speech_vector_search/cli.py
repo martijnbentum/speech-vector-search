@@ -5,9 +5,9 @@ import numpy as np
 
 from speech_vector_search import evaluate
 from speech_vector_search import io
+from speech_vector_search import locations
 from speech_vector_search import prototypes
 from speech_vector_search import search
-from speech_vector_search import utils
 
 
 def build_prototypes_command(args):
@@ -19,8 +19,8 @@ def build_prototypes_command(args):
         metadata, subset_size=args.subset_size, n_subsets=args.n_subsets,
         min_count=args.min_count, seed=args.seed,
         strict_non_overlapping=not args.allow_partial)
-    utils.ensure_directory(args.output_dir)
-    paths = io.save_prototypes(vectors, rows, args.output_dir, config=config)
+    paths = io.save_prototypes(vectors, rows, directory=args.output_dir,
+        name=args.name, config=config)
     print(json.dumps(paths, indent=2))
 
 
@@ -29,12 +29,8 @@ def build_index_command(args):
     args                     argparse namespace
     '''
     vectors, metadata = io.load_prototypes(args.vectors, args.metadata)
-    utils.ensure_directory(args.output_dir)
-    vectors_path = args.output_dir + "/prototypes.npy"
-    metadata_path = args.output_dir + "/metadata.jsonl"
-    np.save(vectors_path, vectors)
-    io.save_metadata_jsonl(metadata, metadata_path)
-    paths = {"vectors": vectors_path, "metadata": metadata_path}
+    paths = io.save_prototypes(vectors, metadata, directory=args.output_dir,
+        name=args.name)
     print(json.dumps(paths, indent=2))
 
 
@@ -87,7 +83,9 @@ def build_parser():
     build_prototypes = subparsers.add_parser("build-prototypes")
     build_prototypes.add_argument("--embeddings", required=True)
     build_prototypes.add_argument("--metadata", required=True)
-    build_prototypes.add_argument("--output-dir", required=True)
+    build_prototypes.add_argument("--output-dir",
+        default=locations.default_storage_dir())
+    build_prototypes.add_argument("--name", default=locations.default_name())
     build_prototypes.add_argument("--subset-size", type=int, required=True)
     build_prototypes.add_argument("--n-subsets", type=int, required=True)
     build_prototypes.add_argument("--min-count", type=int, default=None)
@@ -98,7 +96,9 @@ def build_parser():
     build_index = subparsers.add_parser("build-index")
     build_index.add_argument("--vectors", required=True)
     build_index.add_argument("--metadata", required=True)
-    build_index.add_argument("--output-dir", required=True)
+    build_index.add_argument("--output-dir",
+        default=locations.default_storage_dir())
+    build_index.add_argument("--name", default=locations.default_name())
     build_index.set_defaults(func=build_index_command)
 
     query = subparsers.add_parser("query")

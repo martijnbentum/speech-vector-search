@@ -1,0 +1,37 @@
+import tempfile
+
+import numpy as np
+
+from speech_vector_search import io
+from speech_vector_search import locations
+
+
+def test_save_and_load_token_data_with_defaults():
+    embeddings = np.array([[1.0, 0.0], [0.0, 1.0]])
+    metadata = [{"word": "a", "id": "0"}, {"word": "b", "id": "1"}]
+    with tempfile.TemporaryDirectory() as directory:
+        paths = io.save_token_data(embeddings, metadata, directory=directory)
+        loaded_embeddings, loaded_metadata = io.load_token_data(
+            directory=directory)
+    assert paths["embeddings"] == locations.token_embeddings_path(directory)
+    assert paths["metadata"] == locations.token_metadata_path(directory)
+    assert np.allclose(loaded_embeddings, embeddings)
+    assert loaded_metadata == metadata
+
+
+def test_save_and_load_prototypes_with_name():
+    vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
+    metadata = [{"word": "a", "subset_id": 0}, {"word": "b", "subset_id": 0}]
+    with tempfile.TemporaryDirectory() as directory:
+        paths = io.save_prototypes(vectors, metadata, directory=directory,
+            name="prototypes")
+        loaded_vectors, loaded_metadata = io.load_prototypes(
+            directory=directory,
+            name="prototypes",
+        )
+    assert paths["vectors"] == locations.prototype_vectors_path(directory,
+        "prototypes")
+    assert paths["metadata"] == locations.prototype_metadata_path(directory,
+        "prototypes")
+    assert np.allclose(loaded_vectors, vectors)
+    assert loaded_metadata == metadata
