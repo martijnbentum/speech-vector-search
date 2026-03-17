@@ -6,8 +6,8 @@ from speech_vector_search.search import PrototypeIndex
 
 
 def _same_word_mask(metadata, query_index):
-    '''mark same-word prototypes.
-    metadata                 prototype metadata
+    '''mark prototypes that share the query word.
+    metadata                 prototype metadata rows
     '''
     word = metadata[query_index]["word"]
     mask = np.array([row["word"] == word for row in metadata], dtype=bool)
@@ -16,7 +16,7 @@ def _same_word_mask(metadata, query_index):
 
 
 def top_k_same_word_retrieval(vectors, metadata, top_k=5):
-    '''compute top-k same-word hit rate.
+    '''measure how often a same-word prototype appears in the top-k results.
     vectors                  prototype matrix
     '''
     index = PrototypeIndex(vectors, metadata, backend="brute_force")
@@ -25,9 +25,10 @@ def top_k_same_word_retrieval(vectors, metadata, top_k=5):
         result = index.query_by_index(query_index, top_k=min(top_k + 1, len(metadata)))
         found = False
         for neighbour in result["indices"]:
+            neighbour = int(neighbour)
             if neighbour == query_index:
                 continue
-            if metadata[int(neighbour)]["word"] == metadata[query_index]["word"]:
+            if metadata[neighbour]["word"] == metadata[query_index]["word"]:
                 found = True
                 break
         hits.append(found)
@@ -35,7 +36,7 @@ def top_k_same_word_retrieval(vectors, metadata, top_k=5):
 
 
 def mean_same_word_rank(vectors, metadata):
-    '''compute mean rank of first same-word match.
+    '''measure the average rank of the first same-word neighbour.
     vectors                  prototype matrix
     '''
     index = PrototypeIndex(vectors, metadata, backend="brute_force")
@@ -44,9 +45,10 @@ def mean_same_word_rank(vectors, metadata):
         result = index.query_by_index(query_index, top_k=len(metadata))
         rank = len(metadata)
         for position, neighbour in enumerate(result["indices"], start=1):
+            neighbour = int(neighbour)
             if neighbour == query_index:
                 continue
-            if metadata[int(neighbour)]["word"] == metadata[query_index]["word"]:
+            if metadata[neighbour]["word"] == metadata[query_index]["word"]:
                 rank = position
                 break
         ranks.append(rank)
@@ -54,7 +56,7 @@ def mean_same_word_rank(vectors, metadata):
 
 
 def average_within_word_similarity(vectors, metadata):
-    '''compute average within-word cosine similarity.
+    '''compute the mean cosine similarity between prototypes of the same word.
     vectors                  prototype matrix
     '''
     vectors = np.asarray(vectors, dtype=float)
@@ -71,7 +73,7 @@ def average_within_word_similarity(vectors, metadata):
 
 
 def summarize_prototypes(vectors, metadata):
-    '''summarize prototype collection.
+    '''summarize how many words and prototypes are present in the collection.
     vectors                  prototype matrix
     '''
     counts = Counter(row["word"] for row in metadata)
@@ -84,7 +86,7 @@ def summarize_prototypes(vectors, metadata):
 
 
 def evaluate_same_word_retrieval(vectors, metadata, top_k=5):
-    '''run simple same-word retrieval evaluation.
+    '''run a small retrieval report over the prototype collection.
     vectors                  prototype matrix
     '''
     summary = summarize_prototypes(vectors, metadata)
