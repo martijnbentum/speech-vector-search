@@ -67,7 +67,7 @@ def load_demo_tokens(embeddings_path, metadata_path):
     return io.load_token_data(embeddings_path, metadata_path)
 
 
-def build_demo_prototypes( embeddings, metadata, save = False, overwrite = False,
+def build_demo_prototypes(embeddings, metadata, save = False, overwrite = False,
     directory = None,  name = "prototypes"):
     '''build and save demo prototypes.
     embeddings               token embedding matrix
