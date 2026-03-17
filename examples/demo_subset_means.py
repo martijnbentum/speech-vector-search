@@ -15,20 +15,12 @@ def main():
     embeddings, metadata = make_demo_tokens()
     with tempfile.TemporaryDirectory() as directory:
         utils.ensure_directory(directory)
-        embeddings_path, metadata_path = save_demo_tokens(
-            directory,
-            embeddings,
-            metadata,
-        )
-        loaded_embeddings, loaded_metadata = load_demo_tokens(
-            embeddings_path,
-            metadata_path,
-        )
-        vectors, rows = build_demo_prototypes(
-            directory,
-            loaded_embeddings,
-            loaded_metadata,
-        )
+        embeddings_path, metadata_path = save_demo_tokens(directory, embeddings,
+            metadata)
+        loaded_embeddings, loaded_metadata = load_demo_tokens(embeddings_path,
+            metadata_path)
+        vectors, rows = build_demo_prototypes(directory, loaded_embeddings,
+            loaded_metadata)
         show_demo_query(vectors, rows)
 
 
