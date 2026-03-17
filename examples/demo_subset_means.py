@@ -67,16 +67,19 @@ def load_demo_tokens(embeddings_path, metadata_path):
     return io.load_token_data(embeddings_path, metadata_path)
 
 
-def build_demo_prototypes(directory, embeddings, metadata):
+def build_demo_prototypes( embeddings, metadata, save = False, directory = None, 
+    name = "prototypes"):
     '''build and save demo prototypes.
-    directory                directory for saved prototype files
     embeddings               token embedding matrix
     metadata                 token metadata rows
+    directory                directory for saved prototype files
+    name                     base name for saved prototype files
     '''
     vectors, rows, config = prototypes.build_subset_mean_prototypes(
         embeddings, metadata, subset_size=3, n_subsets=1, min_count=3, seed=3)
-    io.save_prototypes(vectors, rows, directory=directory,
-        name="prototypes", config=config)
+    if save: 
+        io.save_prototypes(vectors, rows, directory=directory,
+            name="prototypes", config=config)
     return vectors, rows
 
 
