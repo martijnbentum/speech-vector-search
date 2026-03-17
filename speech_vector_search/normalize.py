@@ -13,7 +13,7 @@ def l2_normalize(vector):
 
 def l2_normalize_rows(vectors):
     '''normalize matrix rows.
-    vectors                  input matrix
+    vectors                 input matrix
     '''
     vectors = np.asarray(vectors, dtype=float)
     norms = np.linalg.norm(vectors, axis=1, keepdims=True)

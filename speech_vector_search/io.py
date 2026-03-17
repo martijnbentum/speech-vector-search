@@ -9,6 +9,7 @@ from speech_vector_search.utils import infer_label_key, write_json
 def load_token_data(embeddings_path, metadata_path):
     '''load token embeddings and metadata.
     embeddings_path         npz or npy file path
+    metadata_path           jsonl or csv file path
     '''
     if embeddings_path.endswith(".npz"):
         embeddings = load_embeddings_npz(embeddings_path)
@@ -32,6 +33,7 @@ def load_token_data(embeddings_path, metadata_path):
 def save_metadata_jsonl(rows, path):
     '''save metadata rows to jsonl.
     rows                     metadata records
+    path                     jsonl file path
     '''
     with open(path, "w") as handle:
         for row in rows:
@@ -41,6 +43,9 @@ def save_metadata_jsonl(rows, path):
 def save_prototypes(vectors, metadata, output_dir, config=None):
     '''save prototype vectors and metadata.
     vectors                  prototype matrix
+    metadata                 prototype metadata records
+    output_dir               directory to save files in
+    config                   optional config dict to save
     '''
     vectors_path = output_dir + "/prototypes.npy"
     metadata_path = output_dir + "/metadata.jsonl"
@@ -58,6 +63,7 @@ def save_prototypes(vectors, metadata, output_dir, config=None):
 def load_prototypes(vectors_path, metadata_path):
     '''load saved prototypes.
     vectors_path             npy file path
+    metadata_path            jsonl file path
     '''
     vectors = np.asarray(np.load(vectors_path), dtype=float)
     metadata = load_metadata_jsonl(metadata_path)

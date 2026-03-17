@@ -8,6 +8,8 @@ from speech_vector_search.search import PrototypeIndex
 def top_k_same_word_retrieval(vectors, metadata, top_k=5):
     '''measure how often a same-word prototype appears in the top-k results.
     vectors                  prototype matrix
+    metadata                 prototype metadata rows
+    top_k                    number of neighbours to inspect
     '''
     index = PrototypeIndex(vectors, metadata, backend="brute_force")
     hits = []
@@ -29,6 +31,7 @@ def top_k_same_word_retrieval(vectors, metadata, top_k=5):
 def mean_same_word_rank(vectors, metadata):
     '''measure the average rank of the first same-word neighbour.
     vectors                  prototype matrix
+    metadata                 prototype metadata rows
     '''
     index = PrototypeIndex(vectors, metadata, backend="brute_force")
     ranks = []
@@ -49,6 +52,7 @@ def mean_same_word_rank(vectors, metadata):
 def average_within_word_similarity(vectors, metadata):
     '''compute the mean cosine similarity between prototypes of the same word.
     vectors                  prototype matrix
+    metadata                 prototype metadata rows
     '''
     vectors = np.asarray(vectors, dtype=float)
     similarities = []
@@ -66,6 +70,7 @@ def average_within_word_similarity(vectors, metadata):
 def summarize_prototypes(vectors, metadata):
     '''summarize how many words and prototypes are present in the collection.
     vectors                  prototype matrix
+    metadata                 prototype metadata rows
     '''
     counts = Counter(row["word"] for row in metadata)
     within_word_cosine = average_within_word_similarity(vectors, metadata)
@@ -80,6 +85,8 @@ def summarize_prototypes(vectors, metadata):
 def evaluate_same_word_retrieval(vectors, metadata, top_k=5):
     '''run a small retrieval report over the prototype collection.
     vectors                  prototype matrix
+    metadata                 prototype metadata rows
+    top_k                    number of neighbours to inspect
     '''
     summary = summarize_prototypes(vectors, metadata)
     top_k_score = top_k_same_word_retrieval(
@@ -95,6 +102,7 @@ def evaluate_same_word_retrieval(vectors, metadata, top_k=5):
 def _same_word_mask(metadata, query_index):
     '''mark prototypes that share the query word.
     metadata                 prototype metadata rows
+    query_index              prototype index used as query
     '''
     word = metadata[query_index]["word"]
     mask = np.array([row["word"] == word for row in metadata], dtype=bool)

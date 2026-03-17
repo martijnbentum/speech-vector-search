@@ -78,6 +78,7 @@ def evaluate_command(args):
 
 def main():
     '''run command line interface.
+    no parameters            reads command line arguments directly
     '''
     parser = build_parser()
     args = parser.parse_args()
@@ -93,6 +94,7 @@ def main():
 
 def build_parser():
     '''create command line parser.
+    no parameters            returns configured argument parser
     '''
     parser = argparse.ArgumentParser(prog="speech-vector-search")
     subparsers = parser.add_subparsers(dest="command", required=True)

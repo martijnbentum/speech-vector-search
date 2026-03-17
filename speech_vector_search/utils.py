@@ -20,6 +20,7 @@ def read_json(path):
 def write_json(data, path):
     '''write json to disk.
     data                    object to serialize
+    path                    json file path
     '''
     with open(path, "w") as handle:
         json.dump(data, handle, indent=2)

@@ -21,6 +21,12 @@ def build_subset_mean_prototypes(
 ):
     '''build normalized subset-mean prototypes.
     embeddings               token embeddings
+    metadata                 token metadata rows
+    subset_size              number of tokens per subset
+    n_subsets                number of subsets per word
+    min_count                minimum tokens required for a word
+    seed                     random seed for subset sampling
+    strict_non_overlapping   require full non-overlapping subsets
     '''
     embeddings = np.asarray(embeddings, dtype=float)
     groups = group_token_indices(metadata)
@@ -75,6 +81,9 @@ def build_subset_mean_prototypes(
 def make_prototype_row(word, subset_id, subset_indices, token_rows):
     '''build metadata row for one prototype.
     word                     word label
+    subset_id                subset number for this prototype
+    subset_indices           source token indices in the subset
+    token_rows               metadata rows for subset tokens
     '''
     row = {
         "word": word,

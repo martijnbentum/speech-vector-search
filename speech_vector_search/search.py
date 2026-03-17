@@ -18,7 +18,8 @@ class BruteForceIndex:
 
     def search(self, query_vectors, top_k):
         '''search nearest neighbours.
-        query_vectors           query matrix
+        query_vectors          query matrix
+        top_k                  number of neighbours to return
         '''
         query_vectors = l2_normalize_rows(query_vectors)
         scores = np.dot(query_vectors, self.vectors.T)
@@ -41,7 +42,8 @@ class FaissIndex:
 
     def search(self, query_vectors, top_k):
         '''search nearest neighbours.
-        query_vectors           query matrix
+        query_vectors          query matrix
+        top_k                  number of neighbours to return
         '''
         query_vectors = l2_normalize_rows(query_vectors).astype("float32")
         scores, indices = self.index.search(query_vectors, top_k)
@@ -78,7 +80,8 @@ class PrototypeIndex:
 
     def query(self, vector, top_k=5):
         '''query by external vector.
-        vector                  query vector
+        vector                 query vector
+        top_k                  number of neighbours to return
         '''
         vector = np.asarray(vector, dtype=float).reshape(1, -1)
         scores, indices = self.backend.search(vector, top_k)
@@ -86,13 +89,15 @@ class PrototypeIndex:
 
     def query_by_index(self, index, top_k=5):
         '''query by prototype index.
-        index                   prototype index
+        index                  prototype index
+        top_k                  number of neighbours to return
         '''
         return self.query(self.vectors[index], top_k=top_k)
 
     def _format_result(self, scores, indices):
         '''attach metadata to search output.
-        scores                  similarity scores
+        scores                 similarity scores
+        indices                prototype indices
         '''
         rows = [self.metadata[int(index)] for index in indices]
         return {
@@ -105,5 +110,7 @@ class PrototypeIndex:
 def build_index(vectors, metadata, backend="auto"):
     '''create prototype index.
     vectors                  prototype matrix
+    metadata                 prototype metadata rows
+    backend                  search backend name
     '''
     return PrototypeIndex(vectors, metadata, backend=backend)

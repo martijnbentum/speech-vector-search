@@ -18,6 +18,7 @@ def group_token_indices(metadata):
 def filter_groups_by_count(groups, min_count):
     '''keep groups with enough tokens.
     groups                   word to indices map
+    min_count                minimum number of tokens per word
     '''
     selected = {}
     for word, indices in groups.items():
@@ -29,6 +30,9 @@ def filter_groups_by_count(groups, min_count):
 def sample_subsets(indices, subset_size, n_subsets, seed):
     '''sample deterministic non-overlapping subsets.
     indices                  token indices for one word
+    subset_size              number of tokens per subset
+    n_subsets                number of subsets to sample
+    seed                     random seed for shuffling
     '''
     rng = np.random.RandomState(seed)
     shuffled = list(indices)
@@ -53,6 +57,10 @@ def sample_word_subsets(
 ):
     '''sample subsets for all words.
     groups                   word to indices map
+    subset_size              number of tokens per subset
+    n_subsets                number of subsets per word
+    seed                     random seed offset for sampling
+    strict_non_overlapping   require full non-overlapping subsets
     '''
     sampled = {}
     for offset, word in enumerate(sorted(groups)):
