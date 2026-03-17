@@ -17,16 +17,20 @@ def load_token_data(embeddings_path=None, metadata_path=None, directory=None,
     '''
     embeddings_path, metadata_path = resolve_token_paths(embeddings_path,
         metadata_path, directory, name)
-    if embeddings_path.endswith(".npz"):
+    embeddings_path = locations.resolve_directory(embeddings_path)
+    metadata_path = locations.resolve_directory(metadata_path)
+    embeddings_name = str(embeddings_path)
+    metadata_name = str(metadata_path)
+    if embeddings_name.endswith(".npz"):
         embeddings = load_embeddings_npz(embeddings_path)
-    elif embeddings_path.endswith(".npy"):
+    elif embeddings_name.endswith(".npy"):
         embeddings = np.asarray(np.load(embeddings_path), dtype=float)
     else:
         raise ValueError("embeddings must be .npz or .npy")
 
-    if metadata_path.endswith(".jsonl"):
+    if metadata_name.endswith(".jsonl"):
         metadata = load_metadata_jsonl(metadata_path)
-    elif metadata_path.endswith(".csv"):
+    elif metadata_name.endswith(".csv"):
         metadata = load_metadata_csv(metadata_path)
     else:
         raise ValueError("metadata must be .jsonl or .csv")

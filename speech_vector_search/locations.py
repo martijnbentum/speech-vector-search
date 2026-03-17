@@ -1,7 +1,7 @@
-import os
+from pathlib import Path
 
 
-DEFAULT_STORAGE_DIR = "data"
+DEFAULT_STORAGE_DIR = Path("data")
 DEFAULT_NAME = "tokens"
 
 
@@ -26,7 +26,7 @@ def token_embeddings_path(directory=None, name=None):
     '''
     directory = resolve_directory(directory)
     name = resolve_name(name)
-    return os.path.join(directory, name + ".npz")
+    return directory / (name + ".embeddings.npz")
 
 
 def token_metadata_path(directory=None, name=None):
@@ -36,7 +36,7 @@ def token_metadata_path(directory=None, name=None):
     '''
     directory = resolve_directory(directory)
     name = resolve_name(name)
-    return os.path.join(directory, name + ".jsonl")
+    return directory / (name + ".metadata.jsonl")
 
 
 def prototype_vectors_path(directory=None, name=None):
@@ -46,7 +46,7 @@ def prototype_vectors_path(directory=None, name=None):
     '''
     directory = resolve_directory(directory)
     name = resolve_name(name)
-    return os.path.join(directory, name + ".npy")
+    return directory / (name + ".prototypes.npy")
 
 
 def prototype_metadata_path(directory=None, name=None):
@@ -56,7 +56,7 @@ def prototype_metadata_path(directory=None, name=None):
     '''
     directory = resolve_directory(directory)
     name = resolve_name(name)
-    return os.path.join(directory, name + ".jsonl")
+    return directory / (name + ".prototypes.jsonl")
 
 
 def config_path(directory=None, name=None):
@@ -66,7 +66,7 @@ def config_path(directory=None, name=None):
     '''
     directory = resolve_directory(directory)
     name = resolve_name(name)
-    return os.path.join(directory, name + ".json")
+    return directory / (name + ".config.json")
 
 
 def resolve_directory(directory):
@@ -74,7 +74,7 @@ def resolve_directory(directory):
     directory                optional storage directory
     '''
     if directory is None: return default_storage_dir()
-    return directory
+    return Path(directory)
 
 
 def resolve_name(name):

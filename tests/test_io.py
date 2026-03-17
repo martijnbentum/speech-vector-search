@@ -35,3 +35,25 @@ def test_save_and_load_prototypes_with_name():
         "prototypes")
     assert np.allclose(loaded_vectors, vectors)
     assert loaded_metadata == metadata
+
+
+def test_token_and_prototype_paths_do_not_collide():
+    with tempfile.TemporaryDirectory() as directory:
+        token_metadata = locations.token_metadata_path(directory)
+        prototype_metadata = locations.prototype_metadata_path(directory)
+        token_embeddings = locations.token_embeddings_path(directory)
+        prototype_vectors = locations.prototype_vectors_path(directory)
+    assert token_metadata != prototype_metadata
+    assert token_embeddings != prototype_vectors
+
+
+def test_save_prototypes_raises_when_files_exist():
+    vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
+    metadata = [{"word": "a", "subset_id": 0}, {"word": "b", "subset_id": 0}]
+    with tempfile.TemporaryDirectory() as directory:
+        io.save_prototypes(vectors, metadata, directory=directory)
+        try:
+            io.save_prototypes(vectors, metadata, directory=directory)
+        except FileExistsError:
+            return
+    raise AssertionError("expected FileExistsError when prototype files exist")
