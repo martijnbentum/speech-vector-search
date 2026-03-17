@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "speech-vector-search"
+version = "0.1.0"
+description = "Subset-mean vector search for speech word embeddings"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["numpy"]
+
+[project.optional-dependencies]
+faiss = ["faiss-cpu"]
+test = ["pytest"]
+
+[project.scripts]
+speech-vector-search = "speech_vector_search.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["speech_vector_search*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
