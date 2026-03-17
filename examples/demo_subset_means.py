@@ -67,11 +67,13 @@ def load_demo_tokens(embeddings_path, metadata_path):
     return io.load_token_data(embeddings_path, metadata_path)
 
 
-def build_demo_prototypes( embeddings, metadata, save = False, directory = None, 
-    name = "prototypes"):
+def build_demo_prototypes( embeddings, metadata, save = False, overwrite = False,
+    directory = None,  name = "prototypes"):
     '''build and save demo prototypes.
     embeddings               token embedding matrix
     metadata                 token metadata rows
+    save                     whether to save prototypes to disk
+    overwrite                whether to overwrite existing prototype files
     directory                directory for saved prototype files
     name                     base name for saved prototype files
     '''
@@ -79,7 +81,7 @@ def build_demo_prototypes( embeddings, metadata, save = False, directory = None,
         embeddings, metadata, subset_size=3, n_subsets=1, min_count=3, seed=3)
     if save: 
         io.save_prototypes(vectors, rows, directory=directory,
-            name="prototypes", config=config)
+            name="prototypes", config=config, overwrite=overwrite)
     return vectors, rows
 
 

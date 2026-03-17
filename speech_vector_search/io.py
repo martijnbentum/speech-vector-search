@@ -63,19 +63,26 @@ def save_metadata_jsonl(rows, path):
             handle.write(json.dumps(row) + "\n")
 
 
-def save_prototypes(vectors, metadata, directory=None, name=None, config=None):
+def save_prototypes(vectors, metadata, directory=None, name=None, config=None,
+    overwrite=False):
     '''save prototype vectors and metadata.
     vectors                  prototype matrix
     metadata                 prototype metadata records
     directory                optional storage directory
     name                     optional base name without extension
     config                   optional config dict to save
+    overwrite                whether to overwrite existing files
     '''
     directory = locations.resolve_directory(directory)
     name = locations.resolve_name(name)
     utils.ensure_directory(directory)
     vectors_path = locations.prototype_vectors_path(directory, name)
     metadata_path = locations.prototype_metadata_path(directory, name)
+    if not overwrite:
+        if vectors_path.exists():
+            raise FileExistsError(f"vectors file exists: {vectors_path}")
+        if metadata_path.exists():
+            raise FileExistsError(f"metadata file exists: {metadata_path}")
     np.save(vectors_path, np.asarray(vectors, dtype=float))
     save_metadata_jsonl(metadata, metadata_path)
     if config is not None:
