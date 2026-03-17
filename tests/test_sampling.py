@@ -1,4 +1,7 @@
-from speech_vector_search.sampling import group_token_indices, sample_word_subsets
+from speech_vector_search.sampling import (
+    group_token_indices,
+    sample_word_subsets,
+)
 
 
 def test_group_token_indices():

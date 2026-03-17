@@ -4,7 +4,12 @@ import json
 import numpy as np
 
 from speech_vector_search.evaluate import evaluate_same_word_retrieval
-from speech_vector_search.io import load_prototypes, load_token_data, save_prototypes
+from speech_vector_search.io import (
+    load_prototypes,
+    load_token_data,
+    save_metadata_jsonl,
+    save_prototypes,
+)
 from speech_vector_search.prototypes import build_subset_mean_prototypes
 from speech_vector_search.search import PrototypeIndex
 from speech_vector_search.utils import ensure_directory
@@ -35,10 +40,15 @@ def build_index_command(args):
     '''
     vectors, metadata = load_prototypes(args.vectors, args.metadata)
     ensure_directory(args.output_dir)
-    np.save(args.output_dir + "/prototypes.npy", vectors)
-    from speech_vector_search.io import save_metadata_jsonl
-    save_metadata_jsonl(metadata, args.output_dir + "/metadata.jsonl")
-    print(json.dumps({"vectors": args.output_dir + "/prototypes.npy", "metadata": args.output_dir + "/metadata.jsonl"}, indent=2))
+    vectors_path = args.output_dir + "/prototypes.npy"
+    metadata_path = args.output_dir + "/metadata.jsonl"
+    np.save(vectors_path, vectors)
+    save_metadata_jsonl(metadata, metadata_path)
+    paths = {
+        "vectors": vectors_path,
+        "metadata": metadata_path,
+    }
+    print(json.dumps(paths, indent=2))
 
 
 def query_command(args):
@@ -64,6 +74,21 @@ def evaluate_command(args):
     vectors, metadata = load_prototypes(args.vectors, args.metadata)
     result = evaluate_same_word_retrieval(vectors, metadata, top_k=args.top_k)
     print(json.dumps(result, indent=2))
+
+
+def main():
+    '''run command line interface.
+    '''
+    parser = build_parser()
+    args = parser.parse_args()
+    missing_query = (
+        args.command == "query"
+        and args.query_index is None
+        and args.query_vector is None
+    )
+    if missing_query:
+        parser.error("query requires --query-index or --query-vector")
+    args.func(args)
 
 
 def build_parser():
@@ -105,16 +130,6 @@ def build_parser():
     evaluate.set_defaults(func=evaluate_command)
 
     return parser
-
-
-def main():
-    '''run command line interface.
-    '''
-    parser = build_parser()
-    args = parser.parse_args()
-    if args.command == "query" and args.query_index is None and args.query_vector is None:
-        parser.error("query requires --query-index or --query-vector")
-    args.func(args)
 
 
 if __name__ == "__main__":

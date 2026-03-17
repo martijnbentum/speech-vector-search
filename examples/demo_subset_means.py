@@ -4,7 +4,11 @@ import tempfile
 
 import numpy as np
 
-from speech_vector_search.io import load_token_data, save_metadata_jsonl, save_prototypes
+from speech_vector_search.io import (
+    load_token_data,
+    save_metadata_jsonl,
+    save_prototypes,
+)
 from speech_vector_search.prototypes import build_subset_mean_prototypes
 from speech_vector_search.search import PrototypeIndex
 from speech_vector_search.utils import ensure_directory

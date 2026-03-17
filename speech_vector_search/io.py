@@ -6,44 +6,6 @@ import numpy as np
 from speech_vector_search.utils import infer_label_key, write_json
 
 
-def load_embeddings_npz(path):
-    '''load embeddings from npz.
-    path                    npz file path
-    '''
-    data = np.load(path, allow_pickle=False)
-    if "embeddings" not in data:
-        raise ValueError("npz file must contain 'embeddings'")
-    return np.asarray(data["embeddings"], dtype=float)
-
-
-def load_metadata_jsonl(path):
-    '''load metadata rows from jsonl.
-    path                    jsonl file path
-    '''
-    rows = []
-    with open(path) as handle:
-        for line in handle:
-            line = line.strip()
-            if not line:
-                continue
-            row = json.loads(line)
-            infer_label_key(row)
-            rows.append(row)
-    return rows
-
-
-def load_metadata_csv(path):
-    '''load metadata rows from csv.
-    path                    csv file path
-    '''
-    with open(path) as handle:
-        reader = csv.DictReader(handle)
-        rows = list(reader)
-    for row in rows:
-        infer_label_key(row)
-    return rows
-
-
 def load_token_data(embeddings_path, metadata_path):
     '''load token embeddings and metadata.
     embeddings_path         npz or npy file path
@@ -102,3 +64,42 @@ def load_prototypes(vectors_path, metadata_path):
     if len(vectors) != len(metadata):
         raise ValueError("metadata length must match number of vectors")
     return vectors, metadata
+
+
+def load_embeddings_npz(path):
+    '''load embeddings from npz.
+    path                    npz file path
+    '''
+    data = np.load(path, allow_pickle=False)
+    if "embeddings" not in data:
+        raise ValueError("npz file must contain 'embeddings'")
+    embeddings = np.asarray(data["embeddings"], dtype=float)
+    return embeddings
+
+
+def load_metadata_jsonl(path):
+    '''load metadata rows from jsonl.
+    path                    jsonl file path
+    '''
+    rows = []
+    with open(path) as handle:
+        for line in handle:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            infer_label_key(row)
+            rows.append(row)
+    return rows
+
+
+def load_metadata_csv(path):
+    '''load metadata rows from csv.
+    path                    csv file path
+    '''
+    with open(path) as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+    for row in rows:
+        infer_label_key(row)
+    return rows

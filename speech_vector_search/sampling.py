@@ -44,7 +44,13 @@ def sample_subsets(indices, subset_size, n_subsets, seed):
     return subsets
 
 
-def sample_word_subsets(groups, subset_size, n_subsets, seed=0, strict_non_overlapping=True):
+def sample_word_subsets(
+    groups,
+    subset_size,
+    n_subsets,
+    seed=0,
+    strict_non_overlapping=True,
+):
     '''sample subsets for all words.
     groups                   word to indices map
     '''
