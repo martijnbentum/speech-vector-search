@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+python3 - <<'PY'
+from pathlib import Path
+import re
+
+path = Path("pyproject.toml")
+text = path.read_text()
+pattern = r'(?m)^(version = ")(\d+)\.(\d+)\.(\d+)(")$'
+match = re.search(pattern, text)
+if match is None:
+    raise SystemExit("pre-commit: could not find [project] version in pyproject.toml")
+
+major, minor, patch = (int(match.group(index)) for index in range(2, 5))
+new_version = f'{match.group(1)}{major}.{minor}.{patch + 1}{match.group(5)}'
+updated = re.sub(pattern, new_version, text, count=1)
+path.write_text(updated)
+PY
+
+git add pyproject.toml
