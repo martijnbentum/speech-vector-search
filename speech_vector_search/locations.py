@@ -2,7 +2,6 @@ from pathlib import Path
 
 
 DEFAULT_STORAGE_DIR = Path("data")
-DEFAULT_TOKEN_NAME = "tokens"
 DEFAULT_PROTOTYPE_NAME = "prototypes"
 
 
@@ -17,14 +16,7 @@ def default_name():
     '''return the default base name for saved files.
     no parameters            returns default base name
     '''
-    return default_token_name()
-
-
-def default_token_name():
-    '''return the default base name for token files.
-    no parameters            returns default token base name
-    '''
-    return DEFAULT_TOKEN_NAME
+    return default_prototype_name()
 
 
 def default_prototype_name():
@@ -32,28 +24,6 @@ def default_prototype_name():
     no parameters            returns default prototype name
     '''
     return DEFAULT_PROTOTYPE_NAME
-
-
-def token_embeddings_path(directory=None, name=None):
-    '''build the token embedding path.
-    directory                optional storage directory
-    name                     optional base name without extension
-    '''
-    directory = resolve_directory(directory)
-    name = resolve_token_name(name)
-    return directory / (name + ".embeddings.npz")
-
-
-def token_metadata_path(directory=None, name=None):
-    '''build the token metadata path.
-    directory                optional storage directory
-    name                     optional base name without extension
-    '''
-    directory = resolve_directory(directory)
-    name = resolve_token_name(name)
-    return directory / (name + ".metadata.jsonl")
-
-
 def prototype_vectors_path(directory=None, name=None):
     '''build the prototype vector path.
     directory                optional storage directory
@@ -101,15 +71,6 @@ def resolve_name(name):
     name                     optional base name without extension
     '''
     if name is None: return default_name()
-    return name
-
-
-def resolve_token_name(name):
-    '''resolve the base name for token files.
-    name                     optional base name without extension
-    '''
-    if name is None:
-        return default_token_name()
     return name
 
 

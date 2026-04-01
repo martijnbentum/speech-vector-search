@@ -1,6 +1,8 @@
 import numpy as np
 
 from speech_vector_search import normalize
+from speech_vector_search import phraser_adapter
+from speech_vector_search import prototype_artifact
 from speech_vector_search import sampling
 from speech_vector_search import utils
 
@@ -66,30 +68,15 @@ def make_prototype_row(word, subset_id, subset_indices, token_rows):
         "source_phraser_keys")
     source_echoframe_keys = gather_source_keys(token_rows, "echoframe_key",
         "source_echoframe_keys")
-    return {
-        "label": word,
-        "unit_type": unit_type,
-        "source_phraser_keys": source_phraser_keys,
-        "source_echoframe_keys": source_echoframe_keys,
-        "n_occurrences": len(source_phraser_keys),
-        "subset_id": subset_id,
-    }
+    return prototype_artifact.make_prototype_row(word, unit_type,
+        source_phraser_keys, source_echoframe_keys, subset_id=subset_id)
 
 
 def infer_unit_type(rows):
     '''infer one shared unit type from source rows.
     rows                     metadata rows in subset
     '''
-    unit_types = []
-    for row in rows:
-        unit_type = row.get("unit_type")
-        if unit_type is None:
-            unit_type = "word"
-        unit_types.append(unit_type)
-    unique = sorted(set(unit_types))
-    if len(unique) != 1:
-        raise ValueError("subset rows must share one unit_type")
-    return unique[0]
+    return phraser_adapter.resolve_shared_unit_type(rows)
 
 
 def gather_source_keys(rows, singular_key, plural_key):

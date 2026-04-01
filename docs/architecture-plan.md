@@ -95,7 +95,13 @@ Artifact-level config should include:
 - `layer`
 - `output_type`
 - `pooling`
+- `prototype_method`
 - selected tags
+
+Allowed `prototype_method` values for now:
+
+- `single_occurrence`
+- `mean`
 
 Optional copied metadata may include aggregated or copied source information:
 
@@ -196,7 +202,7 @@ This keeps the repo useful on its own while avoiding overlap with
 
 1. Define the prototype artifact schema.
 2. Add `store_ingest.py`, `phraser_adapter.py`, and `pooling.py`.
-3. Refocus `io.py` on prototype persistence.
+3. Keep `io.py` prototype-only.
 4. Keep `prototypes.py`, `search.py`, and `evaluate.py` storage-agnostic.
 5. Add tests around store ingestion and artifact creation.
 6. Add one end-to-end example from `phraser` + `echoframe` into this repo.

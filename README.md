@@ -1,15 +1,13 @@
 # speech-vector-search
 
-Small Python package for vector search over speech-model token embeddings using subset means.
+Small Python package for vector search over speech-model prototypes.
 
 ## What it does
 
-The package assumes token-level embeddings already exist on disk. It:
+The package works with prototype artifacts on disk. It:
 
-- loads token embeddings and metadata
-- groups tokens by label
-- samples deterministic non-overlapping subsets
-- computes L2-normalized subset-mean prototypes
+- stores prototype vectors and metadata
+- loads prototype vectors and metadata
 - searches prototypes with either numpy or optional FAISS
 - evaluates simple same-word retrieval metrics
 
@@ -39,39 +37,13 @@ From git:
 uv pip install git+ssh://git@github.com/martijnbentum/speech-vector-search.git
 ```
 
-## Expected input format
-
-First version expects:
-
-- embeddings in `.npz`
-- metadata in `.jsonl`
-
-The `.npz` file should contain an array named `embeddings` with shape `(n_tokens, dim)`.
-
-Each metadata row should at least contain:
-
-```json
-{"label": "hello", "id": "utt1_003"}
-```
-Extra fields are preserved.
-
 ## Quick example
 
 ```python
-from speech_vector_search.io import load_token_data
-from speech_vector_search.prototypes import build_subset_mean_prototypes
+from speech_vector_search.io import load_prototypes
 from speech_vector_search.search import PrototypeIndex
 
-embeddings, metadata = load_token_data("tokens.npz", "tokens.jsonl")
-vectors, rows, config = build_subset_mean_prototypes(
-    embeddings,
-    metadata,
-    subset_size=4,
-    n_subsets=3,
-    min_count=12,
-    seed=7,
-)
-
+vectors, rows = load_prototypes(directory="data", name="word_demo")
 index = PrototypeIndex(vectors, rows)
 result = index.query_by_index(0, top_k=5)
 print(result["scores"])
@@ -83,4 +55,5 @@ print(result["metadata"][0])
 - FAISS is optional. If `faiss` is not installed, the package falls back to brute-force cosine search with numpy.
 - Prototype vectors are L2-normalized, so cosine similarity is computed with dot products.
 - Metadata rows stay aligned with vectors during save, load, search, and evaluation.
+- Allowed `prototype_method` values are currently `single_occurrence` and `mean`.
 - Git tag `pre_echoframe` marks the repository state before echoframe-related changes.
