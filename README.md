@@ -79,48 +79,6 @@ print(result["scores"])
 print(result["metadata"][0])
 ```
 
-## CLI
-
-Build prototypes:
-
-```bash
-speech-vector-search build-prototypes \
-  --embeddings tokens.npz \
-  --metadata tokens.jsonl \
-  --output-dir data/prototypes \
-  --subset-size 4 \
-  --n-subsets 3 \
-  --min-count 12
-```
-
-Build index files:
-
-```bash
-speech-vector-search build-index \
-  --vectors data/prototypes/prototypes.npy \
-  --metadata data/prototypes/metadata.jsonl \
-  --output-dir data/index
-```
-
-Query:
-
-```bash
-speech-vector-search query \
-  --vectors data/index/prototypes.npy \
-  --metadata data/index/metadata.jsonl \
-  --query-index 0 \
-  --top-k 5
-```
-
-Evaluate:
-
-```bash
-speech-vector-search evaluate \
-  --vectors data/prototypes/prototypes.npy \
-  --metadata data/prototypes/metadata.jsonl \
-  --top-k 5
-```
-
 ## Notes
 
 - FAISS is optional. If `faiss` is not installed, the package falls back to brute-force cosine search with numpy.
