@@ -30,8 +30,13 @@ def infer_label_key(row):
     '''find label key in metadata row.
     row                     metadata record
     '''
-    if "word" in row:
-        return "word"
     if "label" in row:
         return "label"
-    raise ValueError("metadata row must contain 'word' or 'label'")
+    raise ValueError("metadata row must contain 'label'")
+
+
+def label_value(row):
+    '''return the label value from a metadata row.
+    row                     metadata record
+    '''
+    return row[infer_label_key(row)]

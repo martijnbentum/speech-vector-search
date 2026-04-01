@@ -3,6 +3,7 @@ from collections import Counter
 import numpy as np
 
 from speech_vector_search import search
+from speech_vector_search import utils
 
 
 def top_k_same_word_retrieval(vectors, metadata, top_k=5):
@@ -20,7 +21,8 @@ def top_k_same_word_retrieval(vectors, metadata, top_k=5):
         for neighbour in result["indices"]:
             neighbour = int(neighbour)
             if neighbour == query_index: continue
-            if metadata[neighbour]["word"] == metadata[query_index]["word"]:
+            if label_value(metadata[neighbour]) == label_value(
+                metadata[query_index]):
                 found = True
                 break
         hits.append(found)
@@ -40,7 +42,8 @@ def mean_same_word_rank(vectors, metadata):
         for position, neighbour in enumerate(result["indices"], start=1):
             neighbour = int(neighbour)
             if neighbour == query_index: continue
-            if metadata[neighbour]["word"] == metadata[query_index]["word"]:
+            if label_value(metadata[neighbour]) == label_value(
+                metadata[query_index]):
                 rank = position
                 break
         ranks.append(rank)
@@ -54,8 +57,9 @@ def average_within_word_similarity(vectors, metadata):
     '''
     vectors = np.asarray(vectors, dtype=float)
     similarities = []
-    for word in sorted({row["word"] for row in metadata}):
-        indices = [i for i, row in enumerate(metadata) if row["word"] == word]
+    labels = [label_value(row) for row in metadata]
+    for word in sorted(set(labels)):
+        indices = [i for i, label in enumerate(labels) if label == word]
         if len(indices) < 2: continue
         subset = vectors[indices]
         scores = np.dot(subset, subset.T)
@@ -69,7 +73,7 @@ def summarize_prototypes(vectors, metadata):
     vectors                  prototype matrix
     metadata                 prototype metadata rows
     '''
-    counts = Counter(row["word"] for row in metadata)
+    counts = Counter(label_value(row) for row in metadata)
     within_word_cosine = average_within_word_similarity(vectors, metadata)
     return {
         "n_words": len(counts),
@@ -97,7 +101,14 @@ def _same_word_mask(metadata, query_index):
     metadata                 prototype metadata rows
     query_index              prototype index used as query
     '''
-    word = metadata[query_index]["word"]
-    mask = np.array([row["word"] == word for row in metadata], dtype=bool)
+    word = label_value(metadata[query_index])
+    mask = np.array([label_value(row) == word for row in metadata], dtype=bool)
     mask[query_index] = False
     return mask
+
+
+def label_value(row):
+    '''return the comparable label for one prototype row.
+    row                     prototype metadata row
+    '''
+    return utils.label_value(row)

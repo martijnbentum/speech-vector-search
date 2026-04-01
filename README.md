@@ -1,13 +1,13 @@
 # speech-vector-search
 
-Small Python package for vector search over speech-model word embeddings using subset means.
+Small Python package for vector search over speech-model token embeddings using subset means.
 
 ## What it does
 
 The package assumes token-level embeddings already exist on disk. It:
 
 - loads token embeddings and metadata
-- groups tokens by word label
+- groups tokens by label
 - samples deterministic non-overlapping subsets
 - computes L2-normalized subset-mean prototypes
 - searches prototypes with either numpy or optional FAISS
@@ -51,10 +51,9 @@ The `.npz` file should contain an array named `embeddings` with shape `(n_tokens
 Each metadata row should at least contain:
 
 ```json
-{"word": "hello", "id": "utt1_003"}
+{"label": "hello", "id": "utt1_003"}
 ```
-
-`label` can be used instead of `word`. Extra fields are preserved.
+Extra fields are preserved.
 
 ## Quick example
 

@@ -8,7 +8,7 @@ from speech_vector_search import locations
 
 def test_save_and_load_token_data_with_defaults():
     embeddings = np.array([[1.0, 0.0], [0.0, 1.0]])
-    metadata = [{"word": "a", "id": "0"}, {"word": "b", "id": "1"}]
+    metadata = [{"label": "a", "id": "0"}, {"label": "b", "id": "1"}]
     with tempfile.TemporaryDirectory() as directory:
         paths = io.save_token_data(embeddings, metadata, directory=directory)
         loaded_embeddings, loaded_metadata = io.load_token_data(
@@ -21,7 +21,22 @@ def test_save_and_load_token_data_with_defaults():
 
 def test_save_and_load_prototypes_with_name():
     vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
-    metadata = [{"word": "a", "subset_id": 0}, {"word": "b", "subset_id": 0}]
+    metadata = [
+        {
+            "label": "a",
+            "unit_type": "word",
+            "source_phraser_keys": ["p0"],
+            "source_echoframe_keys": ["e0"],
+            "n_occurrences": 1,
+        },
+        {
+            "label": "b",
+            "unit_type": "word",
+            "source_phraser_keys": ["p1"],
+            "source_echoframe_keys": ["e1"],
+            "n_occurrences": 1,
+        },
+    ]
     with tempfile.TemporaryDirectory() as directory:
         paths = io.save_prototypes(vectors, metadata, directory=directory,
             name="prototypes")
@@ -49,7 +64,22 @@ def test_token_and_prototype_paths_do_not_collide():
 
 def test_save_prototypes_raises_when_files_exist():
     vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
-    metadata = [{"word": "a", "subset_id": 0}, {"word": "b", "subset_id": 0}]
+    metadata = [
+        {
+            "label": "a",
+            "unit_type": "word",
+            "source_phraser_keys": ["p0"],
+            "source_echoframe_keys": ["e0"],
+            "n_occurrences": 1,
+        },
+        {
+            "label": "b",
+            "unit_type": "word",
+            "source_phraser_keys": ["p1"],
+            "source_echoframe_keys": ["e1"],
+            "n_occurrences": 1,
+        },
+    ]
     with tempfile.TemporaryDirectory() as directory:
         io.save_prototypes(vectors, metadata, directory=directory)
         try:
@@ -57,3 +87,18 @@ def test_save_prototypes_raises_when_files_exist():
         except FileExistsError:
             return
     raise AssertionError("expected FileExistsError when prototype files exist")
+
+
+def test_prototype_paths_use_directory_layout():
+    with tempfile.TemporaryDirectory() as directory:
+        artifact_directory = locations.prototype_directory(directory,
+            "word_wav2vec2_layer07_mean")
+        vectors_path = locations.prototype_vectors_path(directory,
+            "word_wav2vec2_layer07_mean")
+        metadata_path = locations.prototype_metadata_path(directory,
+            "word_wav2vec2_layer07_mean")
+        config_path = locations.config_path(directory,
+            "word_wav2vec2_layer07_mean")
+    assert vectors_path == artifact_directory / "prototypes.npy"
+    assert metadata_path == artifact_directory / "metadata.jsonl"
+    assert config_path == artifact_directory / "config.json"

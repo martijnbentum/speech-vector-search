@@ -48,7 +48,7 @@ def save_token_data(embeddings, metadata, directory=None, name=None):
     name                    optional base name without extension
     '''
     directory = locations.resolve_directory(directory)
-    name = locations.resolve_name(name)
+    name = locations.resolve_token_name(name)
     utils.ensure_directory(directory)
     embeddings_path = locations.token_embeddings_path(directory, name)
     metadata_path = locations.token_metadata_path(directory, name)
@@ -78,8 +78,9 @@ def save_prototypes(vectors, metadata, directory=None, name=None, config=None,
     overwrite                whether to overwrite existing files
     '''
     directory = locations.resolve_directory(directory)
-    name = locations.resolve_name(name)
-    utils.ensure_directory(directory)
+    name = locations.resolve_prototype_name(name)
+    artifact_directory = locations.prototype_directory(directory, name)
+    utils.ensure_directory(artifact_directory)
     vectors_path = locations.prototype_vectors_path(directory, name)
     metadata_path = locations.prototype_metadata_path(directory, name)
     if not overwrite:
@@ -87,6 +88,7 @@ def save_prototypes(vectors, metadata, directory=None, name=None, config=None,
             raise FileExistsError(f"vectors file exists: {vectors_path}")
         if metadata_path.exists():
             raise FileExistsError(f"metadata file exists: {metadata_path}")
+    validate_prototype_metadata(metadata)
     np.save(vectors_path, np.asarray(vectors, dtype=float))
     save_metadata_jsonl(metadata, metadata_path)
     if config is not None:
@@ -113,6 +115,7 @@ def load_prototypes(vectors_path=None, metadata_path=None, directory=None,
         metadata_path, directory, name)
     vectors = np.asarray(np.load(vectors_path), dtype=float)
     metadata = load_metadata_jsonl(metadata_path)
+    validate_prototype_metadata(metadata)
     if len(vectors) != len(metadata):
         raise ValueError("metadata length must match number of vectors")
     return vectors, metadata
@@ -182,3 +185,45 @@ def resolve_prototype_paths(vectors_path, metadata_path, directory, name):
     if metadata_path is None:
         metadata_path = locations.prototype_metadata_path(directory, name)
     return vectors_path, metadata_path
+
+
+def validate_prototype_metadata(rows):
+    '''validate stored prototype metadata rows.
+    rows                     prototype metadata records
+    '''
+    required = [
+        "label",
+        "unit_type",
+        "source_phraser_keys",
+        "source_echoframe_keys",
+        "n_occurrences",
+    ]
+    for row in rows:
+        for key in required:
+            if key not in row:
+                raise ValueError(f"prototype metadata row must contain '{key}'")
+        validate_source_list(row["source_phraser_keys"], "source_phraser_keys")
+        validate_source_list(row["source_echoframe_keys"],
+            "source_echoframe_keys")
+        if row["n_occurrences"] != len(row["source_phraser_keys"]):
+            raise ValueError(
+                "n_occurrences must match number of source_phraser_keys"
+            )
+        if len(row["source_phraser_keys"]) != len(row["source_echoframe_keys"]):
+            raise ValueError(
+                "source_phraser_keys and source_echoframe_keys must match in length"
+            )
+
+
+def validate_source_list(values, field_name):
+    '''validate one list of source identifiers.
+    values                   field value to validate
+    field_name               metadata field name
+    '''
+    if not isinstance(values, list):
+        raise ValueError(f"{field_name} must be a list")
+    if not values:
+        raise ValueError(f"{field_name} must not be empty")
+    for value in values:
+        if not value:
+            raise ValueError(f"{field_name} must not contain empty values")
