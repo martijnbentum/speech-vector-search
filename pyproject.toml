@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "speech-vector-search"
-version = "0.1.2"
+version = "0.1.3"
 description = "Subset-mean vector search for speech word embeddings"
 readme = "README.md"
 requires-python = ">=3.9"

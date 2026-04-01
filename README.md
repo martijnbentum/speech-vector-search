@@ -84,3 +84,4 @@ print(result["metadata"][0])
 - FAISS is optional. If `faiss` is not installed, the package falls back to brute-force cosine search with numpy.
 - Prototype vectors are L2-normalized, so cosine similarity is computed with dot products.
 - Metadata rows stay aligned with vectors during save, load, search, and evaluation.
+- Git tag `pre_echoframe` marks the repository state before echoframe-related changes.
