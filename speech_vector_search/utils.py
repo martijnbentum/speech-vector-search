@@ -40,3 +40,25 @@ def label_value(row):
     row                     metadata record
     '''
     return row[infer_label_key(row)]
+
+def save_jsonl(rows, path):
+    '''save metadata rows to jsonl.
+    rows                     metadata records
+    path                     jsonl file path
+    '''
+    with open(path, "w") as handle:
+        for row in rows:
+            handle.write(json.dumps(row) + "\n")
+
+def load_jsonl(path):
+    '''load rows from jsonl.
+    path                    jsonl file path
+    '''
+    rows = []
+    with open(path) as handle:
+        for line in handle:
+            line = line.strip()
+            if not line: continue
+            row = json.loads(line)
+            rows.append(row)
+    return rows
