@@ -30,6 +30,8 @@ def infer_label_key(row):
     '''find label key in metadata row.
     row                     metadata record
     '''
+    if hasattr(row, "label"):
+        return "label"
     if "label" in row:
         return "label"
     raise ValueError("metadata row must contain 'label'")
