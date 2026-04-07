@@ -2,7 +2,7 @@ import numpy as np
 
 from speech_vector_search import phraser_adapter
 from speech_vector_search import pooling
-from speech_vector_search import prototype_metadata
+from speech_vector_search import prototypes
 
 
 def load_source_occurrences(source, unit_type=None):
@@ -20,6 +20,39 @@ def load_source_occurrences(source, unit_type=None):
     ]
 
 
+def extract_echoframe_metadata(store, label, unit_type=None):
+    '''extract occurrence metadata rows for one label-tagged echoframe set.
+    store                    echoframe-style store with find_by_tag
+    label                    label stored as an echoframe tag
+    unit_type                optional unit type to attach to each row
+    '''
+    rows = []
+    for metadata in store.find_by_tag(label):
+        rows.append({
+            "label": label,
+            "unit_type": resolve_metadata_unit_type(metadata, unit_type),
+            "phraser_key": metadata.phraser_key,
+            "echoframe_key": metadata.entry_id,
+            "echoframe_metadata": metadata,
+        })
+    return rows
+
+
+def load_echoframe_payloads(store, metadata_rows, frame_key="frames"):
+    '''load payloads for echoframe metadata rows.
+    store                    echoframe-style store with a storage loader
+    metadata_rows            rows containing echoframe metadata references
+    frame_key                output key for the loaded payload
+    '''
+    rows = []
+    for row in metadata_rows:
+        loaded = dict(row)
+        metadata = _resolve_echoframe_metadata(row)
+        loaded[frame_key] = store.storage.load(metadata)
+        rows.append(loaded)
+    return rows
+
+
 def build_prototype_artifacts(source, pooling_method="mean", unit_type=None,
     frame_key="frames"):
     '''convert source occurrences into prototype artifacts.
@@ -34,14 +67,14 @@ def build_prototype_artifacts(source, pooling_method="mean", unit_type=None,
     for row in rows:
         vectors.append(pooling.pool_frames(row[frame_key],
             method=pooling_method))
-        metadata.append(prototype_metadata.make_prototype_row(
-            label=resolve_label(row),
-            unit_type=phraser_adapter.resolve_unit_type(row),
-            source_phraser_keys=[resolve_source_key(row, "phraser_key",
-                "source_phraser_keys")],
-            source_echoframe_keys=[resolve_source_key(row, "echoframe_key",
-                "source_echoframe_keys")],
-        ))
+        metadata.append(prototypes.make_prototype_row(resolve_label(row), None,
+            [{
+                'unit_type': phraser_adapter.resolve_unit_type(row),
+                'phraser_key': resolve_source_key(row, 'phraser_key',
+                    'source_phraser_keys'),
+                'echoframe_key': resolve_source_key(row, 'echoframe_key',
+                    'source_echoframe_keys'),
+            }]))
     if vectors:
         vectors = np.vstack(vectors)
     else:
@@ -72,6 +105,29 @@ def _coerce_source_rows(source, unit_type=None):
     else:
         rows = source
     return list(rows)
+
+
+def _resolve_echoframe_metadata(row):
+    '''resolve one echoframe metadata object from a row.'''
+    if hasattr(row, "entry_id") and hasattr(row, "phraser_key"):
+        return row
+    if "echoframe_metadata" in row:
+        return row["echoframe_metadata"]
+    raise ValueError("row must contain 'echoframe_metadata'")
+
+
+def resolve_metadata_unit_type(metadata, unit_type=None):
+    '''resolve a unit type for echoframe metadata rows.
+    metadata                 echoframe metadata object or row
+    unit_type                optional explicit unit type override
+    '''
+    if unit_type is not None:
+        return phraser_adapter.resolve_unit_type(unit_type)
+    if isinstance(metadata, dict) and 'unit_type' in metadata:
+        return phraser_adapter.resolve_unit_type(metadata['unit_type'])
+    if hasattr(metadata, 'unit_type'):
+        return phraser_adapter.resolve_unit_type(metadata.unit_type)
+    raise ValueError('unit_type is required when metadata lacks one')
 
 
 def resolve_label(row):
