@@ -2,7 +2,7 @@ import numpy as np
 
 from speech_vector_search import normalize
 from speech_vector_search import phraser_adapter
-from speech_vector_search import prototype_artifact
+from speech_vector_search import prototype_metadata
 from speech_vector_search import sampling
 from speech_vector_search import utils
 
@@ -68,7 +68,7 @@ def make_prototype_row(word, subset_id, subset_indices, token_rows):
         "source_phraser_keys")
     source_echoframe_keys = gather_source_keys(token_rows, "echoframe_key",
         "source_echoframe_keys")
-    return prototype_artifact.make_prototype_row(word, unit_type,
+    return prototype_metadata.make_prototype_row(word, unit_type,
         source_phraser_keys, source_echoframe_keys, subset_id=subset_id)
 
 

@@ -1,8 +1,8 @@
-from speech_vector_search import prototype_artifact
+from speech_vector_search import prototype_metadata
 
 
 def test_make_prototype_row_sets_occurrence_count():
-    row = prototype_artifact.make_prototype_row("a", "word", ["p0", "p1"],
+    row = prototype_metadata.make_prototype_row("a", "word", ["p0", "p1"],
         ["e0", "e1"], subset_id=3)
     assert row["n_occurrences"] == 2
     assert row["subset_id"] == 3
@@ -19,7 +19,7 @@ def test_validate_rows_rejects_mismatched_source_lengths():
         }
     ]
     try:
-        prototype_artifact.validate_rows(rows)
+        prototype_metadata.validate_rows(rows)
     except ValueError as exc:
         assert "must match in length" in str(exc)
         return

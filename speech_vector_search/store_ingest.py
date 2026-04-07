@@ -2,7 +2,7 @@ import numpy as np
 
 from speech_vector_search import phraser_adapter
 from speech_vector_search import pooling
-from speech_vector_search import prototype_artifact
+from speech_vector_search import prototype_metadata
 
 
 def load_source_occurrences(source, unit_type=None):
@@ -34,7 +34,7 @@ def build_prototype_artifacts(source, pooling_method="mean", unit_type=None,
     for row in rows:
         vectors.append(pooling.pool_frames(row[frame_key],
             method=pooling_method))
-        metadata.append(prototype_artifact.make_prototype_row(
+        metadata.append(prototype_metadata.make_prototype_row(
             label=resolve_label(row),
             unit_type=phraser_adapter.resolve_unit_type(row),
             source_phraser_keys=[resolve_source_key(row, "phraser_key",
