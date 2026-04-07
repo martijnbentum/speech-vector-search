@@ -18,7 +18,6 @@ def build_subset_prototypes(label, embeddings, metadata, subset_size, n_subsets,
     seed                     random seed for subset sampling
     strict_non_overlapping   require full non-overlapping subsets
     '''
-    embeddings = np.asarray(embeddings, dtype=float)
     validate_embedding_metadata(embeddings, metadata)
     label = resolve_single_label(metadata, label=label)
     if strict_non_overlapping: required_count = subset_size * n_subsets
@@ -120,12 +119,8 @@ def validate_embedding_metadata(embeddings, metadata):
     embeddings               token embeddings
     metadata                 token metadata rows
     '''
-    if embeddings.ndim != 2:
-        raise ValueError('embeddings must be a 2D matrix')
-    if len(metadata) != len(embeddings):
-        raise ValueError('embeddings and metadata must have the same length')
-    if len(metadata) == 0:
-        raise ValueError('metadata must not be empty')
+    if len(embeddings) != len(metadata):
+        raise ValueError("number of embeddings and metadata rows must match")
 
 
 def resolve_single_label(metadata, label=None):
