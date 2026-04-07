@@ -34,7 +34,14 @@ pip install -e .[faiss]
 From git:
 
 ```bash
-uv pip install git+ssh://git@github.com/martijnbentum/speech-vector-search.git
+uv pip install git+https://github.com/martijnbentum/speech-vector-search.git
+```
+
+Optional extras from git:
+
+```bash
+uv pip install 'speech-vector-search[test] @ \
+git+https://github.com/martijnbentum/speech-vector-search.git'
 ```
 
 ## Quick example
