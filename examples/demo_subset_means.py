@@ -43,8 +43,12 @@ def build_demo_prototypes(embeddings, metadata):
     embeddings               token embedding matrix
     metadata                 token metadata rows
     '''
-    vectors, rows, config = prototypes.build_subset_mean_prototypes(
-        embeddings, metadata, subset_size=3, n_subsets=1, min_count=3, seed=3)
+    hello_vectors, hello_rows, _ = prototypes.build_subset_prototypes('hello',
+        embeddings[:3], metadata[:3], subset_size=3, n_subsets=1, seed=3)
+    world_vectors, world_rows, _ = prototypes.build_subset_prototypes('world',
+        embeddings[3:], metadata[3:], subset_size=3, n_subsets=1, seed=3)
+    vectors = np.vstack([hello_vectors, world_vectors])
+    rows = hello_rows + world_rows
     return vectors, rows
 
 

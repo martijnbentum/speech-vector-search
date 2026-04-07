@@ -1,7 +1,7 @@
 import numpy as np
 
 from speech_vector_search import locations
-from speech_vector_search import prototype_metadata
+from speech_vector_search import prototypes
 from speech_vector_search import utils
 
 
@@ -17,7 +17,7 @@ def save_prototypes(vectors, metadata, name=None, directory=None, config=None,
     '''
     vectors_path = locations.make_path(directory, name, 'vectors', overwrite)
     metadata_path = locations.make_path(directory, name, 'metadata', overwrite)
-    prototype_metadata.validate_rows(metadata)
+    prototypes.validate_rows(metadata)
     np.save(vectors_path, np.asarray(vectors, dtype=float))
     utils.save_jsonl(metadata, metadata_path)
     config_path = _handle_config(config, name, directory, overwrite)
@@ -34,7 +34,7 @@ def load_prototypes(name=None, directory=None):
     metadata_path = locations.make_path(directory, name, 'metadata',load = True)
     vectors = np.asarray(np.load(vectors_path), dtype=float)
     metadata = utils.load_jsonl(metadata_path)
-    prototype_metadata.validate_rows(metadata)
+    prototypes.validate_rows(metadata)
     if len(vectors) != len(metadata):
         m  = 'metadata length must match number of vectors'
         m += f' ({len(metadata)} vs {len(vectors)})'

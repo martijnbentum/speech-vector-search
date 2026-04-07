@@ -42,16 +42,22 @@ source_metadata = [
     },
 ]
 
-prototype_vectors, prototype_rows, config = (
-    prototypes.build_subset_mean_prototypes(
-        source_vectors,
-        source_metadata,
-        subset_size=2,
-        n_subsets=1,
-        min_count=2,
-        seed=7,
-    )
-)
+hello_vectors, hello_rows, _ = prototypes.build_subset_prototypes('hello',
+    source_vectors[:2], source_metadata[:2], subset_size=2, n_subsets=1,
+    seed=7)
+world_vectors, world_rows, _ = prototypes.build_subset_prototypes('world',
+    source_vectors[2:], source_metadata[2:], subset_size=2, n_subsets=1,
+    seed=7)
+prototype_vectors = np.vstack([hello_vectors, world_vectors])
+prototype_rows = hello_rows + world_rows
+config = {
+    'prototype_method': 'subset_mean',
+    'subset_size': 2,
+    'n_subsets': 1,
+    'min_count': 2,
+    'seed': 7,
+    'strict_non_overlapping': True,
+}
 
 config.update(
     {
