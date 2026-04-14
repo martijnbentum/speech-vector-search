@@ -68,7 +68,7 @@ def build_prototype_artifacts(source, pooling_method="mean", unit_type=None,
     for row in rows:
         vectors.append(pooling.pool_frames(row[frame_key],
             method=pooling_method))
-        metadata.append(prototypes.make_prototype_row(resolve_label(row), None,
+        metadata.append(prototypes.make_prototype_metadata(resolve_label(row), None,
             [{
                 'unit_type': phraser_adapter.resolve_unit_type(row),
                 'echoframe_key': resolve_source_key(row, 'echoframe_key',

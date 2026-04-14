@@ -4,8 +4,8 @@ from speech_vector_search import metadata
 from speech_vector_search import prototypes
 
 
-def test_make_prototype_row_sets_occurrence_count():
-    item = prototypes.make_prototype_row('a', 3, [
+def test_make_prototype_metadata_sets_occurrence_count():
+    item = prototypes.make_prototype_metadata('a', 3, [
         {
             'unit_type': 'word',
             'echoframe_key': 'e0',

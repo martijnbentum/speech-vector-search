@@ -53,7 +53,7 @@ def build_mean_prototype(embeddings, metadata, subset_id=None, label=None):
     label = resolve_single_label(metadata, label=label)
     mean_vector = embeddings.mean(axis=0)
     vector = normalize.l2_normalize(mean_vector)
-    row = make_prototype_row(label, subset_id, metadata)
+    row = make_prototype_metadata(label, subset_id, metadata)
     return vector, row
 
 def make_config(subset_size, n_subsets, min_count, seed,
@@ -78,7 +78,7 @@ def make_config(subset_size, n_subsets, min_count, seed,
     return config
 
 
-def make_prototype_row(word, subset_id, token_rows):
+def make_prototype_metadata(word, subset_id, token_rows):
     '''build metadata row for one prototype.
     word                     prototype label
     subset_id                subset number for this prototype
