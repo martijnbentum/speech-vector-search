@@ -1,8 +1,8 @@
 import numpy as np
 
 from speech_vector_search import normalize
+from speech_vector_search import metadata
 from speech_vector_search import phraser_adapter
-from speech_vector_search import prototype_metadata
 from speech_vector_search import sampling
 from speech_vector_search import utils
 
@@ -85,26 +85,24 @@ def make_prototype_row(word, subset_id, token_rows):
     token_rows               metadata rows for subset tokens
     '''
     unit_type = infer_unit_type(token_rows)
-    source_phraser_keys = gather_source_keys(token_rows, "phraser_key",
-        "source_phraser_keys")
     source_echoframe_keys = gather_source_keys(token_rows, "echoframe_key",
         "source_echoframe_keys")
-    return prototype_metadata.make_prototype_row(word, unit_type,
-        source_phraser_keys, source_echoframe_keys, subset_id=subset_id)
+    return metadata.make_prototype_row(word, unit_type,
+        source_echoframe_keys, subset_id=subset_id)
 
 
 def validate_row(row):
     '''validate one prototype metadata row.
     row                      prototype metadata record
     '''
-    prototype_metadata.validate_row(row)
+    metadata.validate_row(row)
 
 
 def validate_rows(rows):
     '''validate stored prototype metadata rows.
     rows                     prototype metadata records
     '''
-    prototype_metadata.validate_rows(rows)
+    metadata.validate_rows(rows)
 
 
 def infer_unit_type(rows):

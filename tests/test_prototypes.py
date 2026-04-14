@@ -13,21 +13,18 @@ def test_build_mean_prototype():
         ]
     )
     metadata = [
-        {'label': 'bake', 'phraser_key': 'p0', 'echoframe_key': 'e0',
-            'unit_type': 'word'},
-        {'label': 'bake', 'phraser_key': 'p1', 'echoframe_key': 'e1',
-            'unit_type': 'word'},
-        {'label': 'bake', 'phraser_key': 'p2', 'echoframe_key': 'e2',
-            'unit_type': 'word'},
+        {'label': 'bake', 'echoframe_key': 'e0', 'unit_type': 'word'},
+        {'label': 'bake', 'echoframe_key': 'e1', 'unit_type': 'word'},
+        {'label': 'bake', 'echoframe_key': 'e2', 'unit_type': 'word'},
     ]
     vector, row = prototypes.build_mean_prototype(embeddings, metadata)
     assert vector.shape == (2,)
     assert np.allclose(vector, [1.0, 0.0])
-    assert row['label'] == 'bake'
-    assert row['unit_type'] == 'word'
-    assert row['source_phraser_keys'] == ['p0', 'p1', 'p2']
-    assert row['source_echoframe_keys'] == ['e0', 'e1', 'e2']
-    assert row['n_occurrences'] == 3
+    assert row.label == 'bake'
+    assert row.unit_type == 'word'
+    assert row.source_echoframe_keys == ['e0', 'e1', 'e2']
+    assert row.n_occurrences == 3
+    assert not hasattr(row, 'source_phraser_keys')
 
 
 def test_build_subset_prototypes():
@@ -40,30 +37,23 @@ def test_build_subset_prototypes():
         ]
     )
     metadata = [
-        {"label": "bake", "phraser_key": "p0", "echoframe_key": "e0",
-            "unit_type": "word"},
-        {"label": "bake", "phraser_key": "p1", "echoframe_key": "e1",
-            "unit_type": "word"},
-        {"label": "bake", "phraser_key": "p2", "echoframe_key": "e2",
-            "unit_type": "word"},
-        {"label": "bake", "phraser_key": "p3", "echoframe_key": "e3",
-            "unit_type": "word"},
+        {"label": "bake", "echoframe_key": "e0", "unit_type": "word"},
+        {"label": "bake", "echoframe_key": "e1", "unit_type": "word"},
+        {"label": "bake", "echoframe_key": "e2", "unit_type": "word"},
+        {"label": "bake", "echoframe_key": "e3", "unit_type": "word"},
     ]
     vectors, rows, config = prototypes.build_subset_prototypes('bake',
         embeddings, metadata, subset_size=2, n_subsets=2, seed=0)
     assert vectors.shape == (2, 2)
     assert np.allclose(vectors[0], [1.0, 0.0])
-    assert rows[0]["label"] == "bake"
-    assert rows[0]["unit_type"] == "word"
-    assert sorted(rows[0]["source_phraser_keys"]) in (
-        ['p0', 'p1'],
-        ['p2', 'p3'],
-    )
-    assert sorted(rows[0]["source_echoframe_keys"]) in (
+    assert rows[0].label == 'bake'
+    assert rows[0].unit_type == 'word'
+    assert sorted(rows[0].source_echoframe_keys) in (
         ['e0', 'e1'],
         ['e2', 'e3'],
     )
-    assert rows[0]["n_occurrences"] == 2
+    assert rows[0].n_occurrences == 2
+    assert not hasattr(rows[0], 'source_phraser_keys')
     assert config["prototype_method"] == "subset_mean"
     assert config["strict_non_overlapping"] is True
 
@@ -82,10 +72,8 @@ def test_build_subset_prototypes_rejects_mixed_labels():
         ]
     )
     metadata = [
-        {"label": "bake", "phraser_key": "p0", "echoframe_key": "e0",
-            "unit_type": "word"},
-        {"label": "cake", "phraser_key": "p1", "echoframe_key": "e1",
-            "unit_type": "word"},
+        {"label": "bake", "echoframe_key": "e0", "unit_type": "word"},
+        {"label": "cake", "echoframe_key": "e1", "unit_type": "word"},
     ]
     try:
         prototypes.build_subset_prototypes('bake', embeddings, metadata,
@@ -118,12 +106,9 @@ def test_build_subset_prototypes_non_strict_config_min_count():
         ]
     )
     metadata = [
-        {'label': 'bake', 'phraser_key': 'p0', 'echoframe_key': 'e0',
-            'unit_type': 'word'},
-        {'label': 'bake', 'phraser_key': 'p1', 'echoframe_key': 'e1',
-            'unit_type': 'word'},
-        {'label': 'bake', 'phraser_key': 'p2', 'echoframe_key': 'e2',
-            'unit_type': 'word'},
+        {'label': 'bake', 'echoframe_key': 'e0', 'unit_type': 'word'},
+        {'label': 'bake', 'echoframe_key': 'e1', 'unit_type': 'word'},
+        {'label': 'bake', 'echoframe_key': 'e2', 'unit_type': 'word'},
     ]
     _, rows, config = prototypes.build_subset_prototypes('bake', embeddings,
         metadata, subset_size=3, n_subsets=2, seed=0,

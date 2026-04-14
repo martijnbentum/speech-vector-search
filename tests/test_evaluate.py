@@ -35,14 +35,14 @@ def test_evaluation_metrics_accept_label_rows():
         ]
     )
     metadata = [
-        {"label": "a", "unit_type": "word", "source_phraser_keys": ["p0"],
-            "source_echoframe_keys": ["e0"], "n_occurrences": 1},
-        {"label": "a", "unit_type": "word", "source_phraser_keys": ["p1"],
-            "source_echoframe_keys": ["e1"], "n_occurrences": 1},
-        {"label": "b", "unit_type": "word", "source_phraser_keys": ["p2"],
-            "source_echoframe_keys": ["e2"], "n_occurrences": 1},
-        {"label": "b", "unit_type": "word", "source_phraser_keys": ["p3"],
-            "source_echoframe_keys": ["e3"], "n_occurrences": 1},
+        {"label": "a", "unit_type": "word", "source_echoframe_keys": ["e0"],
+            "n_occurrences": 1},
+        {"label": "a", "unit_type": "word", "source_echoframe_keys": ["e1"],
+            "n_occurrences": 1},
+        {"label": "b", "unit_type": "word", "source_echoframe_keys": ["e2"],
+            "n_occurrences": 1},
+        {"label": "b", "unit_type": "word", "source_echoframe_keys": ["e3"],
+            "n_occurrences": 1},
     ]
     result = evaluate.evaluate_same_word_retrieval(vectors, metadata, top_k=1)
     assert result["n_words"] == 2

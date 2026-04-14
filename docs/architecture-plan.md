@@ -83,7 +83,7 @@ Required metadata should include:
 
 - `unit_type`
 - `label`
-- `source_phraser_keys`
+- `source_echoframe_keys`
 - `n_occurrences`
 
 When the artifact is derived from `echoframe`, it should also include source

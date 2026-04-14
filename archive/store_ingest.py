@@ -3,6 +3,7 @@ import numpy as np
 from speech_vector_search import phraser_adapter
 from speech_vector_search import pooling
 from speech_vector_search import prototypes
+from speech_vector_search import utils
 
 
 def load_source_occurrences(source, unit_type=None):
@@ -46,7 +47,7 @@ def load_echoframe_payloads(store, metadata_rows, frame_key="frames"):
     '''
     rows = []
     for row in metadata_rows:
-        loaded = dict(row)
+        loaded = utils.row_to_dict(row)
         metadata = _resolve_echoframe_metadata(row)
         loaded[frame_key] = store.storage.load(metadata)
         rows.append(loaded)
@@ -70,8 +71,6 @@ def build_prototype_artifacts(source, pooling_method="mean", unit_type=None,
         metadata.append(prototypes.make_prototype_row(resolve_label(row), None,
             [{
                 'unit_type': phraser_adapter.resolve_unit_type(row),
-                'phraser_key': resolve_source_key(row, 'phraser_key',
-                    'source_phraser_keys'),
                 'echoframe_key': resolve_source_key(row, 'echoframe_key',
                     'source_echoframe_keys'),
             }]))

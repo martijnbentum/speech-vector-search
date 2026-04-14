@@ -23,9 +23,8 @@ def test_build_prototype_artifacts_pools_occurrences():
     vectors, metadata, config = store_ingest.build_prototype_artifacts(
         occurrences)
     assert np.allclose(vectors, [[2.0, 4.0], [1.0, 3.0]])
-    assert metadata[0]["source_phraser_keys"] == ["p0"]
-    assert metadata[0]["source_echoframe_keys"] == ["e0"]
-    assert metadata[1]["unit_type"] == "phrase"
+    assert metadata[0].source_echoframe_keys == ["e0"]
+    assert metadata[1].unit_type == "phrase"
     assert config["prototype_method"] == "pooled_occurrence"
     assert config["pooling_method"] == "mean"
 

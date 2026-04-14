@@ -4,25 +4,14 @@ import numpy as np
 
 from speech_vector_search import io
 from speech_vector_search import locations
+from speech_vector_search import metadata as metadata_module
 
 
 def test_save_and_load_prototypes_with_name():
     vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
     metadata = [
-        {
-            "label": "a",
-            "unit_type": "word",
-            "source_phraser_keys": ["p0"],
-            "source_echoframe_keys": ["e0"],
-            "n_occurrences": 1,
-        },
-        {
-            "label": "b",
-            "unit_type": "word",
-            "source_phraser_keys": ["p1"],
-            "source_echoframe_keys": ["e1"],
-            "n_occurrences": 1,
-        },
+        metadata_module.PrototypeMetadata('a', 'word', ['e0']),
+        metadata_module.PrototypeMetadata('b', 'word', ['e1']),
     ]
     with tempfile.TemporaryDirectory() as directory:
         paths = io.save_prototypes(vectors, metadata, directory=directory,
@@ -36,26 +25,16 @@ def test_save_and_load_prototypes_with_name():
     assert paths["metadata"] == locations.make_path(directory, "prototypes",
         "metadata", overwrite=True)
     assert np.allclose(loaded_vectors, vectors)
-    assert loaded_metadata == metadata
+    assert [item.to_dict() for item in loaded_metadata] == [
+        item.to_dict() for item in metadata
+    ]
 
 
 def test_save_and_load_prototypes_with_default_name():
     vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
     metadata = [
-        {
-            "label": "a",
-            "unit_type": "word",
-            "source_phraser_keys": ["p0"],
-            "source_echoframe_keys": ["e0"],
-            "n_occurrences": 1,
-        },
-        {
-            "label": "b",
-            "unit_type": "word",
-            "source_phraser_keys": ["p1"],
-            "source_echoframe_keys": ["e1"],
-            "n_occurrences": 1,
-        },
+        metadata_module.PrototypeMetadata('a', 'word', ['e0']),
+        metadata_module.PrototypeMetadata('b', 'word', ['e1']),
     ]
     with tempfile.TemporaryDirectory() as directory:
         paths = io.save_prototypes(vectors, metadata, directory=directory)
@@ -66,26 +45,33 @@ def test_save_and_load_prototypes_with_default_name():
     assert paths["metadata"] == locations.make_path(directory, "prototypes",
         "metadata", overwrite=True)
     assert np.allclose(loaded_vectors, vectors)
-    assert loaded_metadata == metadata
+    assert [item.to_dict() for item in loaded_metadata] == [
+        item.to_dict() for item in metadata
+    ]
+
+
+def test_save_prototypes_accepts_metadata_row_class():
+    vectors = np.array([[1.0, 0.0]])
+    metadata = [
+        metadata_module.PrototypeMetadata(
+            'a',
+            'word',
+            ['e0'],
+        )
+    ]
+    with tempfile.TemporaryDirectory() as directory:
+        io.save_prototypes(vectors, metadata, directory=directory)
+        _, loaded_metadata = io.load_prototypes(directory=directory)
+    assert [item.to_dict() for item in loaded_metadata] == [
+        metadata[0].to_dict()
+    ]
 
 
 def test_save_prototypes_raises_when_files_exist():
     vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
     metadata = [
-        {
-            "label": "a",
-            "unit_type": "word",
-            "source_phraser_keys": ["p0"],
-            "source_echoframe_keys": ["e0"],
-            "n_occurrences": 1,
-        },
-        {
-            "label": "b",
-            "unit_type": "word",
-            "source_phraser_keys": ["p1"],
-            "source_echoframe_keys": ["e1"],
-            "n_occurrences": 1,
-        },
+        metadata_module.PrototypeMetadata('a', 'word', ['e0']),
+        metadata_module.PrototypeMetadata('b', 'word', ['e1']),
     ]
     with tempfile.TemporaryDirectory() as directory:
         io.save_prototypes(vectors, metadata, directory=directory)
@@ -99,20 +85,8 @@ def test_save_prototypes_raises_when_files_exist():
 def test_save_prototypes_ignores_existing_config_when_config_is_none():
     vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
     metadata = [
-        {
-            "label": "a",
-            "unit_type": "word",
-            "source_phraser_keys": ["p0"],
-            "source_echoframe_keys": ["e0"],
-            "n_occurrences": 1,
-        },
-        {
-            "label": "b",
-            "unit_type": "word",
-            "source_phraser_keys": ["p1"],
-            "source_echoframe_keys": ["e1"],
-            "n_occurrences": 1,
-        },
+        metadata_module.PrototypeMetadata('a', 'word', ['e0']),
+        metadata_module.PrototypeMetadata('b', 'word', ['e1']),
     ]
     with tempfile.TemporaryDirectory() as directory:
         config_path = locations.make_path(directory, "demo", "config",
@@ -126,20 +100,8 @@ def test_save_prototypes_ignores_existing_config_when_config_is_none():
 def test_save_prototypes_creates_nested_directories():
     vectors = np.array([[1.0, 0.0], [0.0, 1.0]])
     metadata = [
-        {
-            "label": "a",
-            "unit_type": "word",
-            "source_phraser_keys": ["p0"],
-            "source_echoframe_keys": ["e0"],
-            "n_occurrences": 1,
-        },
-        {
-            "label": "b",
-            "unit_type": "word",
-            "source_phraser_keys": ["p1"],
-            "source_echoframe_keys": ["e1"],
-            "n_occurrences": 1,
-        },
+        metadata_module.PrototypeMetadata('a', 'word', ['e0']),
+        metadata_module.PrototypeMetadata('b', 'word', ['e1']),
     ]
     with tempfile.TemporaryDirectory() as directory:
         nested_directory = (locations.Path(directory) / "runs" / "2026-04-07"
