@@ -8,6 +8,13 @@ def test_resolve_unit_type_alias():
     )
 
 
+def test_resolve_unit_type_from_object_attribute():
+    class Dummy:
+        unit_type = "words"
+
+    assert phraser_adapter.resolve_unit_type(Dummy()) == "word"
+
+
 def test_resolve_shared_unit_type_rejects_mismatch():
     rows = [{"unit_type": "word"}, {"unit_type": "phone"}]
     try:

@@ -15,6 +15,8 @@ def resolve_unit_type(value):
     '''
     if isinstance(value, dict):
         value = value.get("unit_type", "word")
+    elif hasattr(value, 'unit_type'):
+        value = value.unit_type
     if value is None:
         value = "word"
     if not isinstance(value, str):
