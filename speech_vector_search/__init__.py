@@ -6,7 +6,7 @@ from speech_vector_search import phraser_adapter
 from speech_vector_search import pooling
 from speech_vector_search import prototypes
 from speech_vector_search import search
-from archive import store_ingest
+from speech_vector_search import store_ingest
 
 build_subset_prototypes = prototypes.build_subset_prototypes
 build_mean_prototype = prototypes.build_mean_prototype
