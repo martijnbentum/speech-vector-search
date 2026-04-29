@@ -3,7 +3,7 @@ from collections import Counter
 import numpy as np
 
 from speech_vector_search import search
-from speech_vector_search import utils
+from speech_vector_search.utils import label_value
 
 
 def top_k_same_word_retrieval(vectors, metadata, top_k=5):
@@ -107,8 +107,3 @@ def _same_word_mask(metadata, query_index):
     return mask
 
 
-def label_value(row):
-    '''return the comparable label for one prototype row.
-    row                     prototype metadata row
-    '''
-    return utils.label_value(row)

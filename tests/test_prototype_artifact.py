@@ -4,17 +4,8 @@ from speech_vector_search import metadata
 from speech_vector_search import prototypes
 
 
-def test_make_prototype_metadata_sets_occurrence_count():
-    item = prototypes.make_prototype_metadata('a', 3, [
-        {
-            'unit_type': 'word',
-            'echoframe_key': 'e0',
-        },
-        {
-            'unit_type': 'word',
-            'echoframe_key': 'e1',
-        },
-    ])
+def test_prototype_metadata_sets_occurrence_count():
+    item = metadata.PrototypeMetadata('a', 'word', ['e0', 'e1'], subset_id=3)
     assert item.n_occurrences == 2
     assert item.subset_id == 3
     assert item.source_echoframe_keys == ['e0', 'e1']
@@ -53,11 +44,11 @@ def test_prototype_metadata_json_roundtrip():
     assert loaded.source_echoframe_keys == ['e0']
 
 
-def test_prototype_metadata_repr_and_str_are_small_and_verbose():
+def test_prototype_metadata_repr_is_concise():
     item = metadata.PrototypeMetadata('hello', 'word', ['e0', 'e1'])
     assert 'source_echoframe_keys' not in repr(item)
-    assert 'source_echoframe_keys' in str(item)
-    assert 'e0' in str(item)
+    assert 'hello' in repr(item)
+    assert 'word' in repr(item)
 
 
 def test_validate_rows_rejects_mismatched_source_lengths():

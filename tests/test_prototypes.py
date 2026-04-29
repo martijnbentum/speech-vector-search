@@ -84,13 +84,20 @@ def test_build_subset_prototypes_rejects_mixed_labels():
     raise AssertionError("expected ValueError for mixed labels")
 
 
-def test_make_config():
-    config = prototypes.make_config(3, 2, 6, 7, True, label="bake")
+def test_build_subset_prototypes_config_fields():
+    embeddings = np.array([[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]])
+    md = [
+        {'label': 'bake', 'echoframe_key': 'e0', 'unit_type': 'word'},
+        {'label': 'bake', 'echoframe_key': 'e1', 'unit_type': 'word'},
+        {'label': 'bake', 'echoframe_key': 'e2', 'unit_type': 'word'},
+    ]
+    _, _, config = prototypes.build_subset_prototypes('bake', embeddings, md,
+        subset_size=3, n_subsets=1, seed=7)
     assert config == {
         "prototype_method": "subset_mean",
         "subset_size": 3,
-        "n_subsets": 2,
-        "min_count": 6,
+        "n_subsets": 1,
+        "min_count": 3,
         "seed": 7,
         "strict_non_overlapping": True,
         "label": "bake",
