@@ -148,22 +148,20 @@ single source occurrence.
 - `phraser_key` is required because `phraser` is the source of truth for
   speech-related metadata
 
-## Suggested Modules
-
-- `speech_vector_search/store_ingest.py`
-  Loads source vectors from `echoframe` and converts them into prototypes.
-
-- `speech_vector_search/phraser_adapter.py`
-  Resolves `phraser` objects, metadata, and unit selection.
-
-- `speech_vector_search/pooling.py`
-  Reduces frame outputs to one vector per source occurrence.
+## Current Modules
 
 - `speech_vector_search/io.py`
-  Persists prototype artifacts.
+  Persists and loads prototype artifacts.
+
+- `speech_vector_search/metadata.py`
+  Defines prototype metadata objects and validation helpers.
 
 - `speech_vector_search/prototypes.py`
-  Builds subset-mean prototypes from retrieval-ready artifacts.
+  Builds subset-mean prototypes from aligned vectors and token metadata.
+
+- `speech_vector_search/pooling.py`
+  Provides frame pooling helpers when vectors need reduction before prototype
+  construction.
 
 - `speech_vector_search/search.py`
   Searches prototype vectors.
@@ -200,9 +198,7 @@ This keeps the repo useful on its own while avoiding overlap with
 
 ## Recommended Next Steps
 
-1. Define the prototype artifact schema.
-2. Add `store_ingest.py`, `phraser_adapter.py`, and `pooling.py`.
-3. Keep `io.py` prototype-only.
-4. Keep `prototypes.py`, `search.py`, and `evaluate.py` storage-agnostic.
-5. Add tests around store ingestion and artifact creation.
-6. Add one end-to-end example from `phraser` + `echoframe` into this repo.
+1. Keep `io.py` prototype-only.
+2. Keep `prototypes.py`, `search.py`, and `evaluate.py` storage-agnostic.
+3. Document the minimal public API and artifact format clearly.
+4. Keep examples focused on local prototype creation, save/load, and search.

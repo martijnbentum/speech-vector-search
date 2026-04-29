@@ -59,33 +59,23 @@ config = {
     'strict_non_overlapping': True,
 }
 
-config.update(
-    {
-        "model_name": "wav2vec2-base",
-        "layer": 7,
-        "output_type": "hidden_state",
-        "pooling": "mean",
-        "prototype_method": "mean",
-        "tags": ["demo", "dummy"],
-    }
-)
-
 io.save_prototypes(
     prototype_vectors,
     prototype_rows,
-    directory="data",
-    name="dummy_prototype_lexicon",
+    directory='data',
+    name='dummy_prototype_lexicon',
     config=config,
 )
 
 loaded_vectors, loaded_rows = io.load_prototypes(
-    directory="data",
-    name="dummy_prototype_lexicon",
+    directory='data',
+    name='dummy_prototype_lexicon',
 )
 
-index = search.PrototypeIndex(loaded_vectors, loaded_rows, backend="brute_force")
+index = search.PrototypeIndex(
+    loaded_vectors, loaded_rows, backend='brute_force')
 result = index.query_by_index(0, top_k=2)
 
 print(loaded_rows)
-print(result["indices"])
-print(result["metadata"])
+print(result['indices'])
+print(result['metadata'])

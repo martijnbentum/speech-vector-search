@@ -16,19 +16,19 @@ The package works with prototype artifacts on disk. It:
 Editable install:
 
 ```bash
-pip install -e .
+uv pip install -e .
 ```
 
 With tests:
 
 ```bash
-pip install -e .[test]
+uv pip install -e .[test]
 ```
 
 With optional FAISS:
 
 ```bash
-pip install -e .[faiss]
+uv pip install -e .[faiss]
 ```
 
 From git:
@@ -47,14 +47,26 @@ git+https://github.com/martijnbentum/speech-vector-search.git'
 ## Quick example
 
 ```python
-from speech_vector_search.io import load_prototypes
+import numpy as np
+
+from speech_vector_search import io
+from speech_vector_search import prototypes
 from speech_vector_search.search import PrototypeIndex
 
-vectors, rows = load_prototypes(directory="data", name="word_demo")
-index = PrototypeIndex(vectors, rows)
-result = index.query_by_index(0, top_k=5)
-print(result["scores"])
-print(result["metadata"][0])
+vectors = np.array([[1.0, 0.0], [0.9, 0.1]], dtype=float)
+token_rows = [
+    {'label': 'hello', 'unit_type': 'word', 'echoframe_key': 'e0'},
+    {'label': 'hello', 'unit_type': 'word', 'echoframe_key': 'e1'},
+]
+
+prototype_vectors, prototype_rows, _ = prototypes.build_subset_prototypes(
+    'hello', vectors, token_rows, subset_size=2, n_subsets=1)
+io.save_prototypes(prototype_vectors, prototype_rows, name='word_demo')
+
+loaded_vectors, loaded_rows = io.load_prototypes(name='word_demo')
+result = PrototypeIndex(loaded_vectors, loaded_rows).query_by_index(0, top_k=1)
+print(result['scores'])
+print(result['metadata'][0].label)
 ```
 
 ## Notes
@@ -62,5 +74,6 @@ print(result["metadata"][0])
 - FAISS is optional. If `faiss` is not installed, the package falls back to brute-force cosine search with numpy.
 - Prototype vectors are L2-normalized, so cosine similarity is computed with dot products.
 - Metadata rows stay aligned with vectors during save, load, search, and evaluation.
-- Allowed `prototype_method` values are currently `single_occurrence` and `mean`.
+- The core public surface is `io`, `metadata`, `prototypes`, `search`, and `evaluate`.
+- The current prototype builder returns `prototype_method='subset_mean'` configs.
 - Git tag `pre_echoframe` marks the repository state before echoframe-related changes.
