@@ -1,7 +1,9 @@
+from pathlib import Path
+
 import numpy as np
 
 from speech_vector_search import util_math
-from speech_vector_search.metadata import VectorMetadatas
+from speech_vector_search.metadata import VectorMetadatas, make_metadata_path
 import faiss
 
 
@@ -70,6 +72,40 @@ class VectorIndex:
             m = f'index {index} out of bounds {self.vectors.shape[0]}'
             raise ValueError(m)
         return self.query(self.vectors[index], top_k=top_k)
+
+    def save(self, overwrite=False):
+        '''save vectors, metadata.
+        overwrite              replace existing files
+        '''
+        if self.metadatas.stored and not overwrite:
+            print(f'{self.metadatas.path} already exists')
+        else: self.metadatas.save_json(overwrite=overwrite)
+        directory = self.metadatas.directory
+        name = self.metadatas.name
+        vector_path = make_vector_path(directory, name)
+        if vector_path.exists() and not overwrite:
+            print(f'{vector_path} already exists')
+        else: np.save(vector_path, self.vectors)
+
+    @classmethod
+    def load(cls, directory, name, backend='faiss'):
+        '''load vectors, metadata, and rebuild the index.
+        directory              artifact directory
+        name                   artifact base name
+        backend                search backend to rebuild
+        '''
+        vector_path = make_vector_path(directory, name)
+        md_path = make_metadata_path(directory, name)
+        if not vector_path.exists() or not md_path.exists():
+            m = ''
+            if not vector_path.exists(): 
+                m += f'vector file does not exist: {vector_path} '
+            if not md_path.exists(): 
+                m += f'metadata file does not exist: {md_path}'
+            raise FileNotFoundError(m)
+        vectors = np.load(vector_path)
+        metadatas = VectorMetadatas.load_json(md_path)
+        return cls(vectors, metadatas, backend=backend)
 
     def _result(self, scores, indices):
         '''attach metadata to search output.
@@ -173,6 +209,12 @@ def build_index(vectors, metadata, backend="faiss"):
     '''
     return VectorIndex(vectors, metadata, backend=backend)
 
+
+def make_vector_path(directory, name):
+    '''build artifact paths for one saved index.'''
+    directory = Path(directory)
+    return directory / f'{name}.npy'
+        
 def check_single_vector(vector):
     if not isinstance(vector, np.ndarray):
         raise ValueError('vector must be a numpy array')

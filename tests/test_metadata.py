@@ -23,7 +23,7 @@ def test_vector_metadatas_reject_mixed_unit_types():
         metadata.VectorMetadata('hh', 'phone', [b'\xe1']),
     ]
     try:
-        metadata.VectorMetadatas(items)
+        metadata.VectorMetadatas(items, name='demo')
     except ValueError as exc:
         assert 'same unit type' in str(exc)
         return
@@ -46,7 +46,7 @@ def test_vector_metadatas_save_and_load_json(tmp_path):
     assert loaded[1].to_dict() == items[1].to_dict()
 
 
-def test_vector_metadatas_save_json_rejects_existing_file(tmp_path):
+def test_vector_metadatas_save_json_skips_existing_file(tmp_path, capsys):
     items = [metadata.VectorMetadata('hello', 'word', [b'\xe0'])]
     rows = metadata.VectorMetadatas(
         items,
@@ -54,11 +54,9 @@ def test_vector_metadatas_save_json_rejects_existing_file(tmp_path):
         name='demo',
     )
     rows.save_json()
-    try:
-        rows.save_json()
-    except FileExistsError:
-        return
-    raise AssertionError('expected FileExistsError when json file exists')
+    rows.save_json()
+    captured = capsys.readouterr()
+    assert 'already exists' in captured.out
 
 
 def test_vector_metadatas_load_json_rejects_missing_file(tmp_path):

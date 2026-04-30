@@ -9,7 +9,14 @@ def _metadatas():
         metadata.VectorMetadata('a', 'word', [b'\xe0']),
         metadata.VectorMetadata('a', 'word', [b'\xe1']),
         metadata.VectorMetadata('b', 'word', [b'\xe2']),
-    ])
+    ], name='demo')
+
+
+def _pair_metadatas():
+    return metadata.VectorMetadatas([
+        metadata.VectorMetadata('a', 'word', [b'\xe0']),
+        metadata.VectorMetadata('b', 'word', [b'\xe1']),
+    ], name='demo')
 
 
 def test_brute_force_query_by_index_returns_expected_neighbours():
@@ -41,10 +48,7 @@ def test_faiss_queries_returns_one_result_per_query():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='faiss')
     results = index.queries(np.array([[1.0, 0.0], [0.0, 1.0]]), top_k=1)
     assert len(results) == 2
@@ -57,10 +61,7 @@ def test_query_rejects_non_vector_input():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     try:
         index.query([[1.0, 0.0]])
@@ -75,10 +76,7 @@ def test_query_rejects_wrong_embedding_dimension():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     try:
         index.query(np.array([1.0, 0.0, 0.0]))
@@ -93,10 +91,7 @@ def test_queries_rejects_one_dimensional_input():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     try:
         index.queries(np.array([1.0, 0.0]))
@@ -111,10 +106,7 @@ def test_queries_rejects_wrong_embedding_dimension():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     try:
         index.queries(np.array([[1.0, 0.0, 0.0]]))
@@ -129,10 +121,7 @@ def test_queries_returns_one_result_per_query():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     results = index.queries(np.array([[1.0, 0.0], [0.0, 1.0]]), top_k=1)
     assert len(results) == 2
@@ -145,10 +134,7 @@ def test_query_by_index_rejects_out_of_bounds_index():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     try:
         index.query_by_index(2)
@@ -163,10 +149,7 @@ def test_query_by_index_rejects_negative_index():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     try:
         index.query_by_index(-1)
@@ -181,10 +164,7 @@ def test_check_top_k_clamps_to_index_size(capsys):
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     result = index.query_by_index(0, top_k=10)
     captured = capsys.readouterr()
@@ -197,10 +177,7 @@ def test_check_top_k_clamps_to_index_size_for_faiss(capsys):
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='faiss')
     result = index.query_by_index(0, top_k=10)
     captured = capsys.readouterr()
@@ -213,10 +190,7 @@ def test_result_rejects_invalid_backend_indices():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     try:
         index._result(np.array([0.0]), np.array([5]))
@@ -231,10 +205,7 @@ def test_result_returns_metadata_for_valid_indices():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.VectorIndex(vectors, items, backend='brute_force')
     result = index._result(np.array([0.9, 0.8]), np.array([0, 1]))
     assert np.allclose(result['scores'], [0.9, 0.8])
@@ -247,10 +218,7 @@ def test_vector_index_rejects_unsupported_backend():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     try:
         search.VectorIndex(vectors, items, backend='annoy')
     except ValueError as exc:
@@ -262,7 +230,7 @@ def test_vector_index_rejects_unsupported_backend():
 def test_vector_index_rejects_one_dimensional_vectors():
     items = metadata.VectorMetadatas([
         metadata.VectorMetadata('a', 'word', [b'\xe0']),
-    ])
+    ], name='demo')
     try:
         search.VectorIndex(np.array([1.0, 0.0]), items, backend='brute_force')
     except Exception as exc:
@@ -278,7 +246,7 @@ def test_vector_index_rejects_mismatched_metadata_length():
     ])
     items = metadata.VectorMetadatas([
         metadata.VectorMetadata('a', 'word', [b'\xe0']),
-    ])
+    ], name='demo')
     try:
         search.VectorIndex(vectors, items, backend='brute_force')
     except ValueError as exc:
@@ -302,10 +270,7 @@ def test_build_index_returns_vector_index():
         [1.0, 0.0],
         [0.0, 1.0],
     ])
-    items = metadata.VectorMetadatas([
-        metadata.VectorMetadata('a', 'word', [b'\xe0']),
-        metadata.VectorMetadata('b', 'word', [b'\xe1']),
-    ])
+    items = _pair_metadatas()
     index = search.build_index(vectors, items, backend='brute_force')
     assert isinstance(index, search.VectorIndex)
 

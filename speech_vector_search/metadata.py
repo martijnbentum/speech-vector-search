@@ -3,7 +3,7 @@ from pathlib import Path
 
 class VectorMetadatas:
     '''collection of VectorMetadata items.'''
-    def __init__(self, metadatas, directory= '', name=''):
+    def __init__(self, metadatas, name, directory= 'data'):
         self.metadatas = metadatas
         self.directory = directory
         self.name = name
@@ -19,7 +19,7 @@ class VectorMetadatas:
         return m
 
     def _set_info(self):
-        self.path = Path(self.directory) / f'{self.name}.json'
+        self.path = make_metadata_path(self.directory, self.name)
         self.labels = set(metadata.label for metadata in self.metadatas)
         self.unit_type = self.metadatas[0].unit_type
 
@@ -34,9 +34,15 @@ class VectorMetadatas:
     def save_json(self, overwrite=False):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if self.path.exists() and not overwrite:
-            raise FileExistsError(f'{self.path} already exists')
+            print(f'{self.path} already exists')
+            return
         with open(self.path, 'w') as fout:
             json.dump(self.to_dict(), fout)
+
+    @property
+    def stored(self):
+        '''check if the metadata file exists at the expected path.'''
+        return self.path.exists()
 
     @classmethod
     def load_json(cls, path):
@@ -122,5 +128,10 @@ class VectorMetadata:
             raise ValueError('subset_id must be an int or None')
 
 
+def make_metadata_path(directory, name, extension='.json'):
+    if extension and not extension.startswith('.'):
+        extension = '.' + extension
+    path = Path(directory) / f'{name}{extension}'
+    return path
 
 
