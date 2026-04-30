@@ -10,3 +10,5 @@ dist/
 build/
 uv.lock
 AGENTS.md
+archive/prototypes.py
+archive/aggregate.py
