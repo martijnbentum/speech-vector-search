@@ -19,3 +19,11 @@ path.write_text(updated)
 PY
 
 git add pyproject.toml
+
+if [ -d speech_vector_search.egg-info ]; then
+    rm -rf speech_vector_search.egg-info
+fi
+
+if git ls-files --error-unmatch speech_vector_search.egg-info >/dev/null 2>&1; then
+    git rm -r --cached --ignore-unmatch speech_vector_search.egg-info >/dev/null 2>&1 || true
+fi
