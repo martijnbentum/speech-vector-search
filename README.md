@@ -8,7 +8,7 @@ The package works with prototype artifacts on disk. It:
 
 - stores prototype vectors and metadata
 - loads prototype vectors and metadata
-- searches prototypes with either numpy or optional FAISS
+- searches prototypes with FAISS (brute-force numpy fallback available)
 - evaluates simple same-word retrieval metrics
 
 ## Installation
@@ -23,12 +23,6 @@ With tests:
 
 ```bash
 uv pip install -e .[test]
-```
-
-With optional FAISS:
-
-```bash
-uv pip install -e .[faiss]
 ```
 
 From git:
@@ -71,7 +65,7 @@ print(result['metadata'][0].label)
 
 ## Notes
 
-- FAISS is optional. If `faiss` is not installed, the package falls back to brute-force cosine search with numpy.
+- FAISS is a required dependency. The package also supports a brute-force numpy backend via the `backend="brute_force"` option.
 - Prototype vectors are L2-normalized, so cosine similarity is computed with dot products.
 - Metadata rows stay aligned with vectors during save, load, search, and evaluation.
 - The core public surface is `io`, `metadata`, `prototypes`, `search`, and `evaluate`.
