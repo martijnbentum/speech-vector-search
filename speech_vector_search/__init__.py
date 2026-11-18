@@ -1,4 +1,5 @@
 from speech_vector_search import metadata
+from speech_vector_search import ranking
 from speech_vector_search import search
 from speech_vector_search import util_math
 
@@ -8,5 +9,5 @@ VectorMetadatas = metadata.VectorMetadatas
 
 __all__ = [
     'VectorIndex', 'VectorMetadata', 'VectorMetadatas',
-    'metadata', 'search', 'util_math',
+    'metadata', 'ranking', 'search', 'util_math',
 ]

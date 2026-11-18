@@ -16,6 +16,7 @@ def test_package_exports_current_public_api():
         'VectorMetadata',
         'VectorMetadatas',
         'metadata',
+        'ranking',
         'search',
         'util_math',
     ]

@@ -1,4 +1,7 @@
+from unittest import mock
+
 import numpy as np
+import pytest
 
 from speech_vector_search import metadata
 from speech_vector_search import search
@@ -292,3 +295,73 @@ def test_check_multiple_vectors_rejects_one_dimensional_input():
         return
     raise AssertionError(
         'expected ValueError for one-dimensional multiple-vectors input')
+
+
+@pytest.mark.parametrize('backend', ['faiss', 'brute_force'])
+def test_cosine_batches_match_scoring_precision_and_bound_rows(backend):
+    vectors = np.array([[1., 2.], [0., 0.], [-2., 1.]])
+    index = search.VectorIndex(vectors, _metadatas(), backend=backend)
+    queries = np.array([[3., 1.], [0., 0.], [-1., 2.], [1., -2.]])
+    dtype = np.float32 if backend == 'faiss' else np.float64
+    normalized = search.util_math.l2_normalize_rows(queries).astype(dtype)
+    expected = normalized @ index.vectors.astype(dtype).T
+    batches = list(index.cosine_batches(queries, batch_size=2))
+    assert [start for start, _ in batches] == [0, 2]
+    for start, scores in batches:
+        assert scores.shape == (2, 3)
+        assert scores.dtype == dtype
+        np.testing.assert_array_equal(scores, expected[start:start + 2])
+    assert list(index.cosine_batches(np.empty((0, 2)))) == []
+
+
+@pytest.mark.parametrize('batch_size', [0, -1, True, 1.5])
+def test_cosine_batches_reject_invalid_batch_size(batch_size):
+    index = search.VectorIndex(np.eye(3, 2), _metadatas())
+    with pytest.raises(ValueError, match='batch_size'):
+        list(index.cosine_batches(np.ones((1, 2)), batch_size=batch_size))
+
+
+@pytest.mark.parametrize('queries', [np.ones(2), np.ones((1, 3)),
+    np.array([[np.nan, 0.]]), np.array([[np.inf, 0.]])])
+def test_cosine_batches_reject_invalid_queries(queries):
+    index = search.VectorIndex(np.eye(3, 2), _metadatas())
+    with pytest.raises(ValueError):
+        list(index.cosine_batches(queries))
+
+
+@pytest.mark.parametrize('backend', ['faiss', 'brute_force'])
+@pytest.mark.parametrize('value', [np.nan, np.inf, -np.inf])
+def test_vector_index_rejects_nonfinite_candidates_at_construction(backend,
+    value):
+    vectors = np.eye(3, 2)
+    vectors[0, 0] = value
+    with np.errstate(invalid='ignore'):
+        with pytest.raises(ValueError, match='finite'):
+            search.VectorIndex(vectors, _metadatas(), backend=backend)
+
+
+def test_faiss_index_rejects_float32_conversion_overflow():
+    vectors = np.array([[np.finfo(np.float64).max, 0.]])
+    with np.errstate(over='ignore'):
+        with pytest.raises(ValueError, match='finite float32'):
+            search.FaissIndex(vectors)
+
+
+@pytest.mark.parametrize('backend', ['faiss', 'brute_force'])
+def test_repeated_cosine_calls_do_not_scan_or_cast_candidates(backend):
+    index = search.VectorIndex(np.eye(3, 2), _metadatas(), backend=backend)
+    queries = np.array([[1., 2.]])
+    candidates = index.backend.vectors
+    expected = (search.util_math.l2_normalize_rows(queries)
+        .astype(candidates.dtype) @ candidates.T)
+    with mock.patch.object(search.np, 'isfinite', wraps=np.isfinite) as check:
+        with mock.patch.object(search.np, 'asarray', wraps=np.asarray) as cast:
+            for _ in range(2):
+                batches = list(index.cosine_batches(queries))
+                np.testing.assert_array_equal(batches[0][1], expected)
+            assert all(call.args[0].shape == queries.shape
+                for call in check.call_args_list)
+            assert all(call.args[0] is not index.vectors
+                and call.args[0] is not candidates
+                for call in cast.call_args_list)
+    assert index.backend.vectors is candidates

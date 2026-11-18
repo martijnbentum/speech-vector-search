@@ -1,3 +1,4 @@
+from numbers import Integral
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +32,30 @@ class VectorIndex:
             m = f"unsupported backend: {self.backend_name}" 
             m += " (supported: 'brute_force', 'faiss')"
             raise ValueError(m)
+
+    def cosine_batches(self, query_vectors, batch_size=32):
+        '''Yield (start, scores) batches against all indexed candidates.
+
+        query_vectors:  external query matrix, normalized before scoring
+        batch_size:     maximum number of score rows held at once
+        Scores use float32 for faiss and float64 for brute_force. This
+        exhaustive scoring path shares scores across downstream operations;
+        it does not call the backend's nearest-neighbour search.
+        '''
+        if (isinstance(batch_size, bool)
+            or not isinstance(batch_size, Integral) or batch_size < 1):
+            raise ValueError('batch_size must be a positive integer')
+        query_vectors = np.asarray(query_vectors)
+        check_multiple_vectors(query_vectors)
+        self._check_query_vector(query_vectors)
+        candidates = self.backend.vectors
+        dtype = candidates.dtype
+        for start in range(0, len(query_vectors), batch_size):
+            queries = query_vectors[start:start + batch_size]
+            if not np.isfinite(queries).all():
+                raise ValueError('query vectors must contain finite values')
+            queries = util_math.l2_normalize_rows(queries).astype(dtype)
+            yield start, queries @ candidates.T
 
     def queries(self, query_vectors, top_k=5):
         '''query by external vectors.
@@ -131,6 +156,8 @@ class VectorIndex:
             raise ValueError('metadatas must be a VectorMetadatas instance')
         if self.vectors.shape[0] != len(self.metadatas):
             raise ValueError('number of vectors must match number of metadatas')
+        if not np.isfinite(self.vectors).all():
+            raise ValueError('vectors must contain finite values')
 
     def _check_top_k(self, top_k):
         if top_k > self.max_k: 
@@ -178,9 +205,11 @@ class FaissIndex:
     vectors                  normalized vectors
     '''
     def __init__(self, vectors):
-        vectors = vectors.astype("float32")
-        self.index = faiss.IndexFlatIP(vectors.shape[1])
-        self.index.add(vectors)
+        self.vectors = vectors.astype('float32')
+        if not np.isfinite(self.vectors).all():
+            raise ValueError('vectors must contain finite float32 values')
+        self.index = faiss.IndexFlatIP(self.vectors.shape[1])
+        self.index.add(self.vectors)
 
     def search(self, query_vectors, top_k):
         '''search nearest neighbours.
