@@ -100,6 +100,35 @@ Cosine batches reuse the backend's candidate matrix, including the retained
 float32 matrix used to build FAISS. Treat indexed vectors as fixed; rebuild
 the index to change them.
 
+## GPU scores and ranks
+
+The optional `gpu_search` module runs the same scoring, neighbour and rank
+steps with torch on a GPU. Install the extra with `uv pip install -e .[gpu]`.
+`GpuScorer` keeps a float32 device copy of the candidate vectors; the row
+functions work on a whole score batch and return NumPy arrays:
+
+```python
+from speech_vector_search import gpu_search
+
+scorer = gpu_search.GpuScorer(index.vectors)
+for start, scores in scorer.cosine_batches(query_vectors, batch_size=201):
+    excluded = query_indices[start:start + len(scores)]
+    neighbours, neighbour_scores = gpu_search.k_nearest_neighbours_rows(
+        scores, top_k=30, excluded_indices=excluded)
+    ranks, candidate_scores = gpu_search.global_ranks_rows(scores,
+        candidate_indices)
+```
+
+`candidate_indices` is either shared by all rows or one row of candidates per
+score row. Results follow `ranking`, including ties ordered by ascending
+candidate index, for the GPU's own scores. GPU float32 scores differ slightly
+from CPU scores, so ranks of near-equal candidates can differ between
+backends. `GpuScorer` raises `ValueError` when CUDA is unavailable.
+
+On macOS, faiss and torch bundle separate OpenMP runtimes that can crash when
+loaded in one process; the test suite sets `KMP_DUPLICATE_LIB_OK=TRUE` and
+`OMP_NUM_THREADS=1` in `tests/conftest.py`.
+
 ## Notes
 
 - FAISS is a required dependency. The package also supports a brute-force numpy backend via the `backend="brute_force"` option.

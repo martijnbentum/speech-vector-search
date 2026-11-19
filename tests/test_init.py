@@ -15,6 +15,7 @@ def test_package_exports_current_public_api():
         'VectorIndex',
         'VectorMetadata',
         'VectorMetadatas',
+        'gpu_search',
         'metadata',
         'ranking',
         'search',
