@@ -54,10 +54,13 @@ def global_ranks(similarities, candidate_indices):
 
 
 def check_similarities(similarities):
-    '''Return similarities as a finite one-dimensional array.'''
+    '''Return similarities as a finite one-dimensional float array.'''
     similarities = np.asarray(similarities)
     if similarities.ndim != 1:
         raise ValueError('similarities must be one-dimensional')
+    # Ordering negates scores, which wraps or overflows for integers.
+    if similarities.dtype.kind != 'f':
+        raise ValueError('similarities must be floating-point values')
     if not np.isfinite(similarities).all():
         raise ValueError('similarities must contain finite values')
     return similarities

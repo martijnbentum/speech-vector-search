@@ -104,3 +104,12 @@ def test_numpy_integer_candidate_indices():
     scores = np.array([0.5, 1., -1.])
     np.testing.assert_array_equal(
         ranking.global_ranks(scores, np.array([2, 0], dtype='uint32')), [2, 1])
+
+
+@pytest.mark.parametrize('scores', [np.array([0, 2, 1], dtype='uint32'),
+    np.array([np.iinfo('int64').min, 0, 5]), np.array([True, False, True])])
+def test_non_float_similarities(scores):
+    with pytest.raises(ValueError, match='floating-point'):
+        ranking.k_nearest_neighbours(scores, 2)
+    with pytest.raises(ValueError, match='floating-point'):
+        ranking.global_ranks(scores, [0])
