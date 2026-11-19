@@ -82,3 +82,25 @@ def test_numpy_integer_excluded_index():
     np.testing.assert_array_equal(
         ranking.k_nearest_neighbours(np.ones(4), 3,
             excluded_index=np.int64(1)), [0, 2, 3])
+
+
+@pytest.mark.parametrize('value', [np.nan, np.inf, -np.inf])
+def test_non_finite_similarities(value):
+    scores = np.array([0.5, value, 0.1])
+    with pytest.raises(ValueError, match='finite'):
+        ranking.k_nearest_neighbours(scores, 1)
+    with pytest.raises(ValueError, match='finite'):
+        ranking.global_ranks(scores, [0])
+
+
+@pytest.mark.parametrize('candidate_indices', [[-1], [3], [True], [0.5],
+    [[0, 1]]])
+def test_invalid_candidate_indices(candidate_indices):
+    with pytest.raises(ValueError, match='candidate_indices'):
+        ranking.global_ranks(np.ones(3), candidate_indices)
+
+
+def test_numpy_integer_candidate_indices():
+    scores = np.array([0.5, 1., -1.])
+    np.testing.assert_array_equal(
+        ranking.global_ranks(scores, np.array([2, 0], dtype='uint32')), [2, 1])

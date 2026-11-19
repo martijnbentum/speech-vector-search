@@ -12,9 +12,7 @@ def k_nearest_neighbours(similarities, top_k, excluded_index=None):
     top_k:           number of candidates to return
     excluded_index:  optional candidate to omit from neighbours only
     '''
-    similarities = np.asarray(similarities)
-    if similarities.ndim != 1:
-        raise ValueError('similarities must be one-dimensional')
+    similarities = check_similarities(similarities)
     n_candidates = len(similarities)
     if excluded_index is not None:
         if isinstance(excluded_index, bool) or not isinstance(excluded_index,
@@ -47,10 +45,30 @@ def global_ranks(similarities, candidate_indices):
     Equal scores rank by ascending candidate index. Calculations retain
     the input scoring precision.
     '''
-    similarities = np.asarray(similarities)
-    if similarities.ndim != 1:
-        raise ValueError('similarities must be one-dimensional')
+    similarities = check_similarities(similarities)
+    indices = check_candidate_indices(candidate_indices, len(similarities))
     return np.asarray([
         np.count_nonzero(similarities > similarities[i])
         + np.count_nonzero(similarities[:i] == similarities[i])
-        for i in candidate_indices], dtype=np.intp)
+        for i in indices], dtype=np.intp)
+
+
+def check_similarities(similarities):
+    '''Return similarities as a finite one-dimensional array.'''
+    similarities = np.asarray(similarities)
+    if similarities.ndim != 1:
+        raise ValueError('similarities must be one-dimensional')
+    if not np.isfinite(similarities).all():
+        raise ValueError('similarities must contain finite values')
+    return similarities
+
+
+def check_candidate_indices(candidate_indices, n_candidates):
+    '''Return non-negative in-bounds integer candidate indices.'''
+    indices = np.asarray(candidate_indices)
+    if indices.size == 0: return np.empty(0, dtype=np.intp)
+    if indices.ndim != 1 or indices.dtype.kind not in 'iu':
+        raise ValueError('candidate_indices must be one-dimensional integers')
+    if indices.min() < 0 or indices.max() >= n_candidates:
+        raise ValueError('candidate_indices are out of bounds')
+    return indices.astype(np.intp)
